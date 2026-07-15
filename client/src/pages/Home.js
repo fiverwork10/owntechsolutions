@@ -160,7 +160,7 @@ function Home() {
             </div>
             <div className="hidden md:block absolute inset-0 bg-gradient-to-l from-background/90 via-background/50 to-transparent z-10" />
           </div>
-          <div className="relative z-10 flex items-center px-4 sm:px-6 lg:px-12 xl:px-16 py-12 lg:py-0 order-2 lg:order-1 overflow-hidden">
+          <div className="relative z-10 flex items-center px-4 sm:px-6 lg:px-12 xl:px-16 py-6 md:py-12 lg:py-0 order-2 lg:order-1 overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.02] via-transparent to-primary/[0.04]" />
             <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/5 rounded-full blur-[100px]" />
             <div className="absolute -bottom-20 -left-20 w-60 h-60 bg-primary/5 rounded-full blur-[80px]" />
