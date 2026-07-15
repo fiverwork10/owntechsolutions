@@ -42,8 +42,6 @@ function Home() {
   const [showAbout, setShowAbout] = useState(false);
   const [typedText, setTypedText] = useState('');
   const [contactSuccess, setContactSuccess] = useState('');
-  const [scrollProgress, setScrollProgress] = useState(0);
-  const [mouseCoords, setMouseCoords] = useState({ x: 0, y: 0 });
   const [selectedService, setSelectedService] = useState(null);
   const fullText = 'Welcome To OwnTechSolutions';
   const { register, handleSubmit, formState: { errors }, reset } = useForm();
@@ -54,12 +52,9 @@ function Home() {
     const heroTrigger = ScrollTrigger.create({
       trigger: heroRef.current,
       start: 'top top',
-      end: isMobile ? '+=50%' : '+=250%',
+      end: isMobile ? '+=50%' : '+=100%',
       pin: !isMobile,
       anticipatePin: 1,
-      onUpdate: (self) => {
-        setScrollProgress(Math.min(self.progress, 1));
-      },
     });
 
     const ctx = gsap.context(() => {
@@ -124,39 +119,10 @@ function Home() {
         <div className="grid grid-cols-1 lg:grid-cols-2 min-h-screen">
           <div
             ref={sceneRef}
-            onMouseMove={(e) => {
-              const rect = sceneRef.current?.getBoundingClientRect();
-              if (rect) {
-                setMouseCoords({
-                  x: ((e.clientX - rect.left) / rect.width - 0.5) * 2,
-                  y: ((e.clientY - rect.top) / rect.height - 0.5) * 2,
-                });
-              }
-            }}
-            onTouchStart={(e) => {
-              const rect = sceneRef.current?.getBoundingClientRect();
-              const touch = e.touches[0];
-              if (rect && touch) {
-                setMouseCoords({
-                  x: ((touch.clientX - rect.left) / rect.width - 0.5) * 2,
-                  y: ((touch.clientY - rect.top) / rect.height - 0.5) * 2,
-                });
-              }
-            }}
-            onTouchMove={(e) => {
-              const rect = sceneRef.current?.getBoundingClientRect();
-              const touch = e.touches[0];
-              if (rect && touch) {
-                setMouseCoords({
-                  x: ((touch.clientX - rect.left) / rect.width - 0.5) * 2,
-                  y: ((touch.clientY - rect.top) / rect.height - 0.5) * 2,
-                });
-              }
-            }}
-            className="hidden md:block relative h-[45vh] sm:h-[50vh] lg:h-screen order-1 lg:order-2 touch-none"
+            className="hidden md:block relative h-[45vh] sm:h-[50vh] lg:h-screen order-1 lg:order-2"
           >
             <div className="absolute inset-0">
-              <Hero3D progress={scrollProgress} mouseX={mouseCoords.x} mouseY={mouseCoords.y} />
+              <Hero3D />
             </div>
             <div className="hidden md:block absolute inset-0 bg-gradient-to-l from-background/90 via-background/50 to-transparent z-10" />
           </div>

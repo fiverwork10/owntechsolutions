@@ -1,239 +1,96 @@
-import React, { useRef, useMemo, useState, useEffect } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { useGLTF, ContactShadows, Environment } from '@react-three/drei';
-import * as THREE from 'three';
+import React, { useRef, useEffect } from 'react';
 
-useGLTF.preload('/assets/react_logo.glb');
-useGLTF.preload('/assets/node-js.glb');
-useGLTF.preload('/assets/mongodb.glb');
-
-function smoothstep(t) {
-  return t * t * (3 - 2 * t);
+const styleId = 'hero3d-styles';
+if (!document.getElementById(styleId)) {
+  const style = document.createElement('style');
+  style.id = styleId;
+  style.textContent = `
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-20px); }
+    }
+    @keyframes glow-pulse {
+      0%, 100% { text-shadow: 0 0 20px rgba(139,92,246,0.3), 0 0 40px rgba(139,92,246,0.2), 0 0 80px rgba(139,92,246,0.1); }
+      50% { text-shadow: 0 0 30px rgba(139,92,246,0.6), 0 0 60px rgba(139,92,246,0.4), 0 0 120px rgba(139,92,246,0.2); }
+    }
+    @keyframes glow-spread {
+      0% { opacity: 0.3; transform: scale(0.95); }
+      50% { opacity: 0.6; transform: scale(1.05); }
+      100% { opacity: 0.3; transform: scale(0.95); }
+    }
+    @keyframes particle-drift {
+      0% { transform: translateY(0) translateX(0) scale(1); opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { transform: translateY(-200px) translateX(50px) scale(0); opacity: 0; }
+    }
+    .hero-glow-text {
+      animation: float 6s ease-in-out infinite, glow-pulse 3s ease-in-out infinite;
+      background: linear-gradient(135deg, #c084fc 0%, #8b5cf6 30%, #6366f1 60%, #a855f7 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-weight: 900;
+      letter-spacing: 2px;
+    }
+    .hero-glow-ring {
+      position: absolute;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(139,92,246,0.15) 0%, transparent 70%);
+      animation: glow-spread 4s ease-in-out infinite;
+      pointer-events: none;
+    }
+    .particle {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: #8b5cf6;
+      animation: particle-drift 8s ease-out infinite;
+      pointer-events: none;
+    }
+  `;
+  document.head.appendChild(style);
 }
 
-function createGlowTexture() {
-  const canvas = document.createElement('canvas');
-  canvas.width = 128;
-  canvas.height = 128;
-  const ctx = canvas.getContext('2d');
-  const gradient = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
-  gradient.addColorStop(0, 'rgba(176, 5, 255, 1)');
-  gradient.addColorStop(0.2, 'rgba(189, 14, 14, 1)');
-  gradient.addColorStop(0.5, 'rgba(255, 19, 19, 0.93)');
-  gradient.addColorStop(1, 'rgba(255,255,255,0)');
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, 128, 128);
-  const texture = new THREE.CanvasTexture(canvas);
-  return texture;
-}
-
-const glowTexture = createGlowTexture();
-
-function LogoGlow({ position, scale, visible, color }) {
-  const ref = useRef();
-
-  useFrame((state) => {
-    if (!ref.current) return;
-    ref.current.material.opacity = (0.25 + Math.sin(state.clock.elapsedTime * 1.5) * 0.08) * (visible ? 1 : 0);
-  });
-
-  const s = visible ? scale * 3.5 : 0.001;
-
-  return (
-    <sprite ref={ref} position={[position[0], position[1], position[2] - 0.5]} scale={[s, s, 1]}>
-      <spriteMaterial
-        map={glowTexture}
-        transparent
-        opacity={0.25}
-        color={color}
-        depthWrite={false}
-        blending={THREE.AdditiveBlending}
-      />
-    </sprite>
-  );
-}
-
-function LogoModel({ scene, position, scale, mouseX, mouseY, delay, visible }) {
-  const groupRef = useRef();
-
-  const clone = useMemo(() => {
-    const c = scene.clone(true);
-    c.traverse((child) => {
-      if (child.isMesh && child.material) {
-        child.castShadow = true;
-        child.receiveShadow = true;
-        const mat = child.material.clone();
-        mat.metalness = 0.1;
-        mat.roughness = 0.2;
-        if (mat.color) {
-          mat.color.multiplyScalar(5);
-        }
-        mat.needsUpdate = true;
-        child.material = mat;
-      }
-    });
-    return c;
-  }, [scene]);
-
-  useFrame((state) => {
-    if (!groupRef.current) return;
-    const t = state.clock.elapsedTime;
-    groupRef.current.rotation.x = mouseY * 0.25 + Math.sin(t * 0.4 + delay) * 0.05;
-    groupRef.current.rotation.y = mouseX * 0.25 + Math.cos(t * 0.3 + delay) * 0.05;
-    groupRef.current.position.y = Math.sin(t * 0.5 + delay) * 0.1;
-  });
-
-  const s = visible && scale > 0.01 ? scale : 0.001;
-
-  return (
-    <group ref={groupRef} position={position} scale={[s, s, s]}>
-      <primitive object={clone} />
-    </group>
-  );
-}
-
-function computeNormalizedScale(scene, targetSize) {
-  const box = new THREE.Box3().setFromObject(scene);
-  const size = new THREE.Vector3();
-  box.getSize(size);
-  const maxDim = Math.max(size.x, size.y, size.z);
-  return maxDim > 0 ? targetSize / maxDim : 1;
-}
-
-function Scene({ progress, mouseX, mouseY, isMobile }) {
-  const reactGltf = useGLTF('/assets/react_logo.glb');
-  const nodeGltf = useGLTF('/assets/node-js.glb');
-  const mongoGltf = useGLTF('/assets/mongodb.glb');
-
-  const { normReact, normNode, normMongo } = useMemo(() => {
-    const target = isMobile ? 3.0 : 1.8;
-    return {
-      normReact: computeNormalizedScale(reactGltf.scene, target),
-      normNode: computeNormalizedScale(nodeGltf.scene, target),
-      normMongo: computeNormalizedScale(mongoGltf.scene, target),
-    };
-  }, [reactGltf.scene, nodeGltf.scene, mongoGltf.scene, isMobile]);
-
-  const p = Math.min(Math.max(progress, 0), 1);
-
-  const REACT_IN = 0.00;
-  const REACT_END = 0.25;
-  const NODE_IN = 0.30;
-  const NODE_END = 0.55;
-  const MONGO_IN = 0.60;
-  const MONGO_END = 0.85;
-
-  const getReveal = (inStart, inEnd) => {
-    if (p < inStart) return 0;
-    if (p > inEnd) return 1;
-    return smoothstep((p - inStart) / (inEnd - inStart));
-  };
-
-  const reactReveal = getReveal(REACT_IN, REACT_END);
-  const nodeReveal = getReveal(NODE_IN, NODE_END);
-  const mongoReveal = getReveal(MONGO_IN, MONGO_END);
-
-  const X_BASE = isMobile ? -2.8 : -2.0;
-  const X_SPACING = isMobile ? 3.2 : 2.0;
-  const SLIDE_DIST = isMobile ? 3 : 4;
-
-  const reactTargetX = X_BASE;
-  const nodeTargetX = X_BASE + X_SPACING;
-  const mongoTargetX = X_BASE + X_SPACING * 2;
-
-  const reactX = reactReveal > 0
-    ? reactTargetX + (1 - reactReveal) * SLIDE_DIST
-    : reactTargetX + SLIDE_DIST;
-  const nodeX = nodeReveal > 0
-    ? nodeTargetX + (1 - nodeReveal) * SLIDE_DIST
-    : nodeTargetX + SLIDE_DIST;
-  const mongoX = mongoReveal > 0
-    ? mongoTargetX + (1 - mongoReveal) * SLIDE_DIST
-    : mongoTargetX + SLIDE_DIST;
-
-  const reactScale = reactReveal * normReact;
-  const nodeScale = nodeReveal * normNode;
-  const mongoScale = mongoReveal * normMongo;
-
-  const reactActive = reactReveal > 0.01;
-  const nodeActive = nodeReveal > 0.01;
-  const mongoActive = mongoReveal > 0.01;
-
-  const yOffset = isMobile ? -0.3 : 0;
-
-  return (
-    <>
-      <ambientLight intensity={0.8} />
-      <directionalLight position={[5, 8, 6]} intensity={2.5} castShadow shadow-mapSize={[512, 512]}>
-        <orthographicCamera attach="shadow-camera" args={[-10, 10, 10, -10]} />
-      </directionalLight>
-      <directionalLight position={[-4, 3, -5]} intensity={0.8} color="#8B5CF6" />
-      <Environment preset={isMobile ? 'dawn' : 'night'} environmentIntensity={0.4} />
-
-      {reactActive && (
-        <>
-          <LogoGlow position={[reactTargetX, yOffset, isMobile ? -0.3 : 0]} scale={reactScale} visible={reactActive} color="#61DAFB" />
-          <LogoModel scene={reactGltf.scene} position={[reactX, yOffset, 0]} scale={reactScale} mouseX={mouseX} mouseY={mouseY} delay={0} visible={reactActive} />
-        </>
-      )}
-
-      {nodeActive && (
-        <>
-          <LogoGlow position={[nodeTargetX, yOffset, isMobile ? -0.3 : 0]} scale={nodeScale} visible={nodeActive} color="#ff0909ff" />
-          <LogoModel scene={nodeGltf.scene} position={[nodeX, yOffset, 0]} scale={nodeScale} mouseX={mouseX} mouseY={mouseY} delay={1} visible={nodeActive} />
-        </>
-      )}
-
-      {mongoActive && (
-        <>
-          <LogoGlow position={[mongoTargetX, yOffset, isMobile ? -0.3 : 0]} scale={nodeScale} visible={mongoActive} color="#ff00f2ff" />
-          <LogoModel scene={mongoGltf.scene} position={[mongoX, yOffset, 0]} scale={nodeScale} mouseX={mouseX} mouseY={mouseY} delay={2} visible={mongoActive} />
-        </>
-      )}
-
-      <ContactShadows
-        position={[0, -2.5, 0]}
-        opacity={isMobile ? 0.3 : 0.6}
-        scale={isMobile ? 10 : 20}
-        blur={isMobile ? 4 : 2.5}
-        far={5}
-      />
-    </>
-  );
-}
-
-export default function Hero3D({ progress = 0, mouseX = 0, mouseY = 0 }) {
-  const [isMobile, setIsMobile] = useState(false);
+function Particles() {
+  const containerRef = useRef(null);
 
   useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768);
-    check();
-    window.addEventListener('resize', check);
-    return () => window.removeEventListener('resize', check);
+    const container = containerRef.current;
+    if (!container) return;
+    const particles = [];
+    for (let i = 0; i < 30; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      p.style.left = `${Math.random() * 100}%`;
+      p.style.bottom = `${Math.random() * 30}%`;
+      p.style.animationDelay = `${Math.random() * 8}s`;
+      p.style.animationDuration = `${6 + Math.random() * 4}s`;
+      p.style.width = p.style.height = `${2 + Math.random() * 4}px`;
+      p.style.opacity = '0';
+      container.appendChild(p);
+      particles.push(p);
+    }
+    return () => particles.forEach(p => p.remove());
   }, []);
 
-  if (isMobile) {
-    return (
-      <div className="w-full h-full bg-gradient-to-br from-[#020617] via-[#0a0a1a] to-[#1a0533] flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-6xl mb-4">⚡</div>
-          <p className="text-white/40 text-sm">OwnTechSolutions</p>
-        </div>
-      </div>
-    );
-  }
+  return <div ref={containerRef} className="absolute inset-0 overflow-hidden" />;
+}
 
+export default function Hero3D() {
   return (
-    <Canvas
-      camera={{ position: [0, 0, 7], fov: 55 }}
-      dpr={[1, 1.5]}
-      shadows
-      gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
-      style={{ touchAction: 'none' }}
-    >
-      <color attach="background" args={['#020617']} />
-      <fog attach="fog" args={['#020617', 8, 18]} />
-      <Scene progress={progress} mouseX={mouseX} mouseY={mouseY} isMobile={false} />
-    </Canvas>
+    <div className="relative w-full h-full bg-gradient-to-br from-[#020617] via-[#0a0a1a] to-[#1a0533] flex items-center justify-center overflow-hidden">
+      <div className="hero-glow-ring" style={{ width: '500px', height: '500px', top: '10%', right: '-10%', animationDelay: '0s' }} />
+      <div className="hero-glow-ring" style={{ width: '400px', height: '400px', bottom: '5%', left: '-15%', animationDelay: '2s' }} />
+      <div className="hero-glow-ring" style={{ width: '300px', height: '300px', top: '40%', left: '40%', animationDelay: '1s' }} />
+      <Particles />
+      <div className="relative z-10 text-center px-4">
+        <h2 className="hero-glow-text text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-tight">
+          Build Your<br />Vision To Life
+        </h2>
+        <div className="mt-6 mx-auto w-24 h-1 rounded-full bg-gradient-to-r from-transparent via-primary to-transparent opacity-60" />
+      </div>
+    </div>
   );
 }
