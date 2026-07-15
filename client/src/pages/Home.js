@@ -109,25 +109,25 @@ function Home() {
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/10 rounded-full blur-[120px]" />
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-primary/10 rounded-full blur-[120px]" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[200px]" />
-        <div className="relative z-10 flex flex-col items-center text-center px-4 sm:px-6 max-w-5xl mx-auto gap-3 md:gap-4">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: 'easeOut' }} className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass text-primary-light text-sm mb-2">
+        <div className="relative z-10 flex flex-col items-center text-center px-6 sm:px-8 lg:px-12 max-w-6xl mx-auto gap-4 md:gap-5">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: 'easeOut' }} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full glass text-primary-light text-sm sm:text-base">
             <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
             Welcome to OwnTechSolutions
           </motion.div>
-          <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.15, ease: 'easeOut' }} className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight" style={{ textShadow: '0 0 20px rgba(139,92,246,0.3), 0 0 40px rgba(139,92,246,0.15), 0 0 80px rgba(139,92,246,0.08)' }}>
-            <span>Transforming Ideas Into </span>
-            <span className="gradient-text" style={{ textShadow: '0 0 20px rgba(139,92,246,0.6), 0 0 60px rgba(139,92,246,0.3), 0 0 100px rgba(139,92,246,0.15)' }}>Powerful Digital</span>
-            <span> Solutions</span>
+          <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.15, ease: 'easeOut' }} className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black leading-none md:leading-tight tracking-tight" style={{ textShadow: '0 0 30px rgba(139,92,246,0.25), 0 0 60px rgba(139,92,246,0.12), 0 0 120px rgba(139,92,246,0.06)' }}>
+            Transforming Ideas Into{' '}
+            <span className="gradient-text" style={{ textShadow: '0 0 30px rgba(139,92,246,0.6), 0 0 80px rgba(139,92,246,0.3), 0 0 150px rgba(139,92,246,0.15)' }}>Powerful Digital</span>{' '}
+            Solutions
           </motion.h1>
-          <div className="w-16 h-1 bg-gradient-to-r from-transparent via-primary to-transparent rounded-full opacity-60 my-2" />
-          <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.3, ease: 'easeOut' }} className="text-sm sm:text-base md:text-lg lg:text-xl text-text-secondary max-w-2xl leading-relaxed">
+          <div className="w-20 h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent rounded-full opacity-60 my-1 md:my-2" />
+          <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.3, ease: 'easeOut' }} className="text-base sm:text-lg md:text-xl lg:text-2xl text-text-secondary max-w-3xl leading-relaxed font-light">
             MERN Stack Development, Mobile Applications, Enterprise Solutions & UI/UX Design. We build digital products that drive business growth.
           </motion.p>
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.45, ease: 'easeOut' }} className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-2">
-            <Link to="/services" className="btn-primary group text-sm sm:text-base md:text-lg text-center">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.45, ease: 'easeOut' }} className="flex flex-col sm:flex-row gap-3 sm:gap-5 mt-2 md:mt-4">
+            <Link to="/services" className="btn-primary group text-base sm:text-lg md:text-xl px-6 md:px-8 py-3 md:py-4">
               Get Started <FiArrowRight className="group-hover:translate-x-1 transition-transform" />
             </Link>
-            <Link to="/projects" className="btn-secondary group text-sm sm:text-base md:text-lg text-center">
+            <Link to="/projects" className="btn-secondary group text-base sm:text-lg md:text-xl px-6 md:px-8 py-3 md:py-4">
               <FiPlay /> View Portfolio
             </Link>
           </motion.div>
