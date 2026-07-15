@@ -24,6 +24,7 @@ export default function AdminChat() {
   const [showUploadMenu, setShowUploadMenu] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [recordingDuration, setRecordingDuration] = useState(0);
+  const [sendingMedia, setSendingMedia] = useState(false);
   const typingTimeoutRef = useRef(null);
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -70,7 +71,7 @@ export default function AdminChat() {
         return prev.map(c => c._id === convId ? { ...c, lastMessage: data.content || 'Media', lastMessageAt: new Date(), unreadCount: (c.unreadCount || 0) + (selectedConv?._id !== convId ? 1 : 0) } : c);
       });
       if (selectedConv && convId === selectedConv._id) {
-        setMessages(prev => prev.some(m => m._id === data._id) ? prev : [...prev, data]);
+        setMessages(prev => prev.filter(m => !m._id?.startsWith('temp_')).concat(data));
       }
     });
 
@@ -118,6 +119,7 @@ export default function AdminChat() {
     if (!socket || !selectedConv) return;
 
     if (selectedFile) {
+      setSendingMedia(true);
       const form = new FormData();
       form.append('file', selectedFile);
       form.append('type', selectedFile.type.startsWith('image') ? 'image' : selectedFile.type.startsWith('video') ? 'video' : 'document');
@@ -125,11 +127,21 @@ export default function AdminChat() {
       form.append('guestId', selectedConv.guestId);
       form.append('conversationId', selectedConv._id);
       form.append('sender', 'admin');
+      setMessages(prev => [...prev, {
+        _id: `temp_${Date.now()}`,
+        sender: 'admin',
+        content: text || (selectedFile.type.startsWith('image') ? '📷 Image' : selectedFile.type.startsWith('video') ? '🎬 Video' : '📎 Document'),
+        createdAt: new Date().toISOString(),
+        fileUrl: selectedFile.type.startsWith('image') ? URL.createObjectURL(selectedFile) : undefined,
+        messageType: selectedFile.type.startsWith('image') ? 'image' : selectedFile.type.startsWith('video') ? 'video' : 'document',
+        sending: true
+      }]);
       try {
         await fetch(`${API_BASE}/api/whatsapp/send-media`, { method: 'POST', body: form });
       } catch {}
       setSelectedFile(null);
       setFilePreview(null);
+      setSendingMedia(false);
       return;
     }
 
@@ -209,9 +221,19 @@ export default function AdminChat() {
         form.append('guestId', selectedConv?.guestId || '');
         form.append('conversationId', selectedConv?._id || '');
         form.append('sender', 'admin');
+        setSendingMedia(true);
+        setMessages(prev => [...prev, {
+          _id: `temp_voice_${Date.now()}`,
+          sender: 'admin',
+          content: '🎤 Voice note',
+          createdAt: new Date().toISOString(),
+          messageType: 'voice',
+          sending: true
+        }]);
         try {
-          await axios.post(`${API}/api/whatsapp/send-media`, form);
+          await fetch(`${API_BASE}/api/whatsapp/send-media`, { method: 'POST', body: form });
         } catch {}
+        setSendingMedia(false);
         if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop());
         setIsRecording(false);
         setRecordingDuration(0);
@@ -534,8 +556,8 @@ export default function AdminChat() {
                   <div className="flex-1 relative">
                     <textarea value={input} onChange={e => { setInput(e.target.value); emitTyping(); }} onKeyPress={handleKeyPress} placeholder="Type a reply..." className="w-full px-2 md:px-3 py-2.5 md:py-3 bg-transparent text-white placeholder-white/30 outline-none resize-none text-sm leading-relaxed max-h-32" rows={1} onInput={e => { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 128) + 'px'; }} />
                   </div>
-                  <motion.button onClick={sendReply} disabled={!input.trim() && !selectedFile} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.9 }}
-                    className="w-9 h-9 md:w-10 md:h-10 rounded-xl gradient-bg flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-all shrink-0 shadow-lg shadow-primary/25 hover:shadow-[0_0_20px_rgba(139,92,246,0.4)]"><FiSend size={16} /></motion.button>
+                    <motion.button onClick={sendReply} disabled={(!input.trim() && !selectedFile) || sendingMedia} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.9 }}
+                    className="w-9 h-9 md:w-10 md:h-10 rounded-xl gradient-bg flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-all shrink-0 shadow-lg shadow-primary/25 hover:shadow-[0_0_20px_rgba(139,92,246,0.4)]">{sendingMedia ? <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" /> : <FiSend size={16} />}</motion.button>
                 </div>
               </div>
             </>
