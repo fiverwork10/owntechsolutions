@@ -38,11 +38,8 @@ function Home() {
   const aboutRef = useRef(null);
   const contactRef = useRef(null);
   const heroRef = useRef(null);
-  const [showAbout, setShowAbout] = useState(false);
-  const [typedText, setTypedText] = useState('');
   const [contactSuccess, setContactSuccess] = useState('');
   const [selectedService, setSelectedService] = useState(null);
-  const fullText = 'Welcome To OwnTechSolutions';
   const { register, handleSubmit, formState: { errors }, reset } = useForm();
 
   useEffect(() => {
@@ -66,26 +63,6 @@ function Home() {
       ctx.revert();
     };
   }, []);
-
-  useEffect(() => {
-    const aboutObserver = ScrollTrigger.create({
-      trigger: aboutRef.current,
-      start: 'top 60%',
-      onEnter: () => setShowAbout(true)
-    });
-    return () => aboutObserver.kill();
-  }, []);
-
-  useEffect(() => {
-    if (!showAbout) return;
-    let i = 0;
-    setTypedText('');
-    const interval = setInterval(() => {
-      if (i < fullText.length) { setTypedText(fullText.slice(0, i + 1)); i++; }
-      else clearInterval(interval);
-    }, 80);
-    return () => clearInterval(interval);
-  }, [showAbout]);
 
   const onSubmit = async (data) => {
     try {
@@ -183,37 +160,7 @@ function Home() {
         </div>
       </section>
 
-      <AnimatePresence>
-        {showAbout && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="glass-strong rounded-3xl p-6 md:p-12 max-w-2xl w-full relative mx-4"
-            >
-              <button onClick={() => setShowAbout(false)} className="absolute top-3 right-3 md:top-4 md:right-4 w-10 h-10 rounded-xl glass flex items-center justify-center text-text-secondary hover:text-white transition-all">
-                <FiX />
-              </button>
-              <div className="mb-4 md:mb-6">
-                <span className="text-primary text-sm font-medium tracking-widest">ABOUT US</span>
-              </div>
-              <h3 className="text-2xl md:text-4xl font-bold mb-4 md:mb-6 h-8 md:h-12 typing-cursor">{typedText}</h3>
-              <p className="text-text-secondary text-base md:text-lg leading-relaxed mb-6 md:mb-8">
-                We are a professional software development company specializing in MERN Stack Development, Flutter Mobile Applications, Enterprise Software Solutions, UI/UX Design, and Digital Transformation Services. Our team of expert developers, designers, and strategists work together to deliver cutting-edge solutions that drive business success.
-              </p>
-              <Link to="/about" className="btn-primary" onClick={() => setShowAbout(false)}>
-                Learn More About Us <FiArrowRight />
-              </Link>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+
 
       <section ref={reviewsRef} className="relative py-16 md:py-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
