@@ -153,13 +153,12 @@ function Home() {
                 });
               }
             }}
-            className="relative h-[45vh] sm:h-[50vh] lg:h-screen order-1 lg:order-2 touch-none"
+            className="hidden md:block relative h-[45vh] sm:h-[50vh] lg:h-screen order-1 lg:order-2 touch-none"
           >
             <div className="absolute inset-0">
               <Hero3D progress={scrollProgress} mouseX={mouseCoords.x} mouseY={mouseCoords.y} />
             </div>
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/60 to-background lg:hidden z-10" />
-            <div className="hidden lg:block absolute inset-0 bg-gradient-to-l from-background/90 via-background/50 to-transparent z-10" />
+            <div className="hidden md:block absolute inset-0 bg-gradient-to-l from-background/90 via-background/50 to-transparent z-10" />
           </div>
           <div className="relative z-10 flex items-center px-4 sm:px-6 lg:px-12 xl:px-16 py-12 lg:py-0 order-2 lg:order-1 overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.02] via-transparent to-primary/[0.04]" />
