@@ -49,11 +49,13 @@ function Home() {
   const { register, handleSubmit, formState: { errors }, reset } = useForm();
 
   useEffect(() => {
+    const isMobile = window.innerWidth < 768;
+
     const heroTrigger = ScrollTrigger.create({
       trigger: heroRef.current,
       start: 'top top',
-      end: '+=250%',
-      pin: true,
+      end: isMobile ? '+=50%' : '+=250%',
+      pin: !isMobile,
       anticipatePin: 1,
       onUpdate: (self) => {
         setScrollProgress(Math.min(self.progress, 1));
@@ -61,15 +63,17 @@ function Home() {
     });
 
     const ctx = gsap.context(() => {
-      gsap.set('.service-card', { y: 100, opacity: 0 });
-      gsap.to('.service-card', {
-        y: 0, opacity: 1, duration: 0.8, stagger: 0.15, ease: 'power3.out',
-        scrollTrigger: { trigger: servicesRef.current, start: 'top 80%', toggleActions: 'play none none reverse' }
-      });
-      gsap.from('.stats-number', {
-        textContent: 0, duration: 2, ease: 'power1.out', snap: { textContent: 1 },
-        scrollTrigger: { trigger: '.stats-section', start: 'top 80%', toggleActions: 'play none none reverse' }
-      });
+      if (!isMobile) {
+        gsap.set('.service-card', { y: 100, opacity: 0 });
+        gsap.to('.service-card', {
+          y: 0, opacity: 1, duration: 0.8, stagger: 0.15, ease: 'power3.out',
+          scrollTrigger: { trigger: servicesRef.current, start: 'top 80%', toggleActions: 'play none none reverse' }
+        });
+        gsap.from('.stats-number', {
+          textContent: 0, duration: 2, ease: 'power1.out', snap: { textContent: 1 },
+          scrollTrigger: { trigger: '.stats-section', start: 'top 80%', toggleActions: 'play none none reverse' }
+        });
+      }
     });
 
     return () => {

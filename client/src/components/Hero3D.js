@@ -212,17 +212,28 @@ export default function Hero3D({ progress = 0, mouseX = 0, mouseY = 0 }) {
     return () => window.removeEventListener('resize', check);
   }, []);
 
+  if (isMobile) {
+    return (
+      <div className="w-full h-full bg-gradient-to-br from-[#020617] via-[#0a0a1a] to-[#1a0533] flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-4">⚡</div>
+          <p className="text-white/40 text-sm">OwnTechSolutions</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <Canvas
-      camera={{ position: [0, 0, isMobile ? 11 : 7], fov: isMobile ? 65 : 55 }}
-      dpr={isMobile ? [1, 1.2] : [1, 1.5]}
-      shadows={!isMobile}
-      gl={{ antialias: !isMobile, alpha: true, powerPreference: 'high-performance' }}
+      camera={{ position: [0, 0, 7], fov: 55 }}
+      dpr={[1, 1.5]}
+      shadows
+      gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
       style={{ touchAction: 'none' }}
     >
       <color attach="background" args={['#020617']} />
-      <fog attach="fog" args={['#020617', isMobile ? 12 : 8, isMobile ? 25 : 18]} />
-      <Scene progress={progress} mouseX={mouseX} mouseY={mouseY} isMobile={isMobile} />
+      <fog attach="fog" args={['#020617', 8, 18]} />
+      <Scene progress={progress} mouseX={mouseX} mouseY={mouseY} isMobile={false} />
     </Canvas>
   );
 }
