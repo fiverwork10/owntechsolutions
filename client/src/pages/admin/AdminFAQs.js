@@ -1,47 +1,61 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { FiPlus, FiEdit2, FiTrash2, FiX } from 'react-icons/fi';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { useAuth } from '../../context/AuthContext';
 import AdminLayout from '../../components/AdminLayout';
-import axios from 'axios';
+import { queryClient } from '../../components/QueryProvider';
 
 const categoryOptions = ['mern', 'mobile', 'flutter', 'react', 'nodejs', 'mongodb', 'aspnet', 'ui-ux', 'pricing', 'hosting', 'deployment', 'maintenance', 'security', 'seo', 'timelines', 'general'];
 
 export default function AdminFAQs() {
-  const { token } = useAuth();
-  const [faqs, setFaqs] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { API } = useAuth();
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({ question: '', answer: '', category: 'general', tags: '' });
 
-  const fetchFAQs = async () => {
-    try { const res = await axios.get(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/faqs`, { headers: { Authorization: `Bearer ${token}` } }); setFaqs(res.data); }
-    catch (err) { console.error(err); }
-    finally { setLoading(false); }
-  };
+  const { data: faqs = [], isLoading } = useQuery({
+    queryKey: ['admin', 'faqs'],
+    queryFn: async () => {
+      const res = await API.get('/faqs');
+      return res.data || [];
+    },
+  });
 
-  useEffect(() => { fetchFAQs(); }, [token]);
+  const saveMutation = useMutation({
+    mutationFn: async (data) => {
+      if (editing) {
+        const res = await API.put(`/faqs/${editing}`, data);
+        return res.data;
+      } else {
+        const res = await API.post('/faqs', data);
+        return res.data;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'faqs'] });
+      setShowForm(false); setEditing(null); setForm({ question: '', answer: '', category: 'general', tags: '' });
+    },
+  });
 
-  const handleSubmit = async (e) => {
+  const deleteMutation = useMutation({
+    mutationFn: async (id) => {
+      await API.delete(`/faqs/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'faqs'] });
+    },
+  });
+
+  const handleSubmit = (e) => {
     e.preventDefault();
     const data = { ...form, tags: form.tags.split(',').map(t => t.trim()).filter(Boolean) };
-    try {
-      if (editing) {
-        const res = await axios.put(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/faqs/${editing}`, data, { headers: { Authorization: `Bearer ${token}` } });
-        setFaqs(prev => prev.map(f => f._id === editing ? res.data : f));
-      } else {
-        const res = await axios.post(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/faqs`, data, { headers: { Authorization: `Bearer ${token}` } });
-        setFaqs(prev => [res.data, ...prev]);
-      }
-      setShowForm(false); setEditing(null); setForm({ question: '', answer: '', category: 'general', tags: '' });
-    } catch (err) { console.error(err); }
+    saveMutation.mutate(data);
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = (id) => {
     if (!window.confirm('Delete this FAQ?')) return;
-    try { await axios.delete(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/faqs/${id}`, { headers: { Authorization: `Bearer ${token}` } }); setFaqs(prev => prev.filter(f => f._id !== id)); }
-    catch (err) { console.error(err); }
+    deleteMutation.mutate(id);
   };
 
   return (
@@ -68,7 +82,7 @@ export default function AdminFAQs() {
         </motion.div>
       )}
 
-      {loading ? (
+      {isLoading ? (
         <div className="text-center py-20"><div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto" /></div>
       ) : (
         <div className="space-y-3">

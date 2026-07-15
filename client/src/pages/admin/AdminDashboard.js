@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FiFolder, FiMessageSquare, FiMail, FiBarChart2, FiMessageCircle, FiStar, FiTrendingUp, FiPlayCircle } from 'react-icons/fi';
+import { useQuery } from '@tanstack/react-query';
 import { io } from 'socket.io-client';
 import { format, parseISO } from 'date-fns';
 import {
@@ -10,10 +11,9 @@ import {
 } from 'recharts';
 import { useAuth } from '../../context/AuthContext';
 import AdminLayout from '../../components/AdminLayout';
-import axios from 'axios';
+import { queryClient } from '../../components/QueryProvider';
 
 const SOCKET_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 const COLORS = {
   purple: '#8B5CF6',
@@ -278,37 +278,30 @@ function CandlestickChart({ data }) {
 }
 
 export default function AdminDashboard() {
-  const { token } = useAuth();
-  const [stats, setStats] = useState(null);
-  const [candlestickData, setCandlestickData] = useState([]);
-  const [recentContacts, setRecentContacts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { API } = useAuth();
 
-  const fetchStats = useCallback(async () => {
-    try {
-      const res = await axios.get(`${API_URL}/api/analytics/dashboard`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setStats(res.data.stats);
-      setCandlestickData(res.data.candlestickData || []);
-      setRecentContacts(res.data.recentContacts || []);
-    } catch (err) { console.error(err); }
-    finally { setLoading(false); }
-  }, [token]);
+  const { data, isLoading } = useQuery({
+    queryKey: ['admin', 'dashboard'],
+    queryFn: async () => {
+      const res = await API.get('/analytics/dashboard');
+      return res.data;
+    },
+  });
 
-  useEffect(() => { fetchStats(); }, [fetchStats]);
+  const stats = data?.stats || null;
+  const candlestickData = data?.candlestickData || [];
+  const recentContacts = data?.recentContacts || [];
 
   useEffect(() => {
     const socket = io(SOCKET_URL);
     socket.emit('join_admin');
-    socket.on('dashboard:update', (data) => {
-      if (data.stats) setStats(prev => ({ ...prev, ...data.stats }));
-      if (data.candlestickData) setCandlestickData(data.candlestickData);
+    socket.on('dashboard:update', () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'dashboard'] });
     });
     return () => { socket.emit('leave_admin'); socket.disconnect(); };
   }, []);
 
-  if (loading) return <AdminLayout title="Dashboard"><div className="flex items-center justify-center py-20"><div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full" /></div></AdminLayout>;
+  if (isLoading) return <AdminLayout title="Dashboard"><div className="flex items-center justify-center py-20"><div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full" /></div></AdminLayout>;
 
   return (
     <AdminLayout title="Dashboard">

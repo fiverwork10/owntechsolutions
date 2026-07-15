@@ -1,59 +1,57 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiUsers, FiCalendar, FiShield, FiMail, FiUser, FiEye, FiMessageSquare, FiStar, FiTrendingUp, FiX, FiPlus } from 'react-icons/fi';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { format, parseISO } from 'date-fns';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip as ReTooltip, LineChart, Line, Area, AreaChart, Cell, PieChart, Pie } from 'recharts';
 import { useAuth } from '../../context/AuthContext';
 import AdminLayout from '../../components/AdminLayout';
-import axios from 'axios';
-
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+import { queryClient } from '../../components/QueryProvider';
 
 const COLORS = { purple: '#8B5CF6', green: '#10B981', blue: '#3B82F6', amber: '#F59E0B', pink: '#EC4899' };
 
 export default function AdminUsers() {
-  const { token } = useAuth();
-  const [users, setUsers] = useState([]);
-  const [stats, setStats] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { API } = useAuth();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', password: '' });
   const [createError, setCreateError] = useState('');
-  const [createLoading, setCreateLoading] = useState(false);
 
-  const createAdmin = async (e) => {
-    e.preventDefault();
-    setCreateError('');
-    setCreateLoading(true);
-    try {
-      await axios.post(`${API_URL}/api/auth/register-admin`, form, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+  const { data: usersData = [], isLoading } = useQuery({
+    queryKey: ['admin', 'users'],
+    queryFn: async () => {
+      const [usersRes, statsRes] = await Promise.all([
+        API.get('/auth/users'),
+        API.get('/auth/stats')
+      ]);
+      return { users: usersRes.data, stats: statsRes.data };
+    },
+  });
+
+  const users = usersData.users || [];
+  const stats = usersData.stats || null;
+
+  const createMutation = useMutation({
+    mutationFn: async (formData) => {
+      await API.post('/auth/register-admin', formData);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
       setShowCreateModal(false);
       setForm({ name: '', email: '', password: '' });
-      fetchData();
-    } catch (err) {
+      setCreateError('');
+    },
+    onError: (err) => {
       setCreateError(err.response?.data?.message || 'Failed to create admin');
-    } finally {
-      setCreateLoading(false);
-    }
+    },
+  });
+
+  const createAdmin = (e) => {
+    e.preventDefault();
+    setCreateError('');
+    createMutation.mutate(form);
   };
 
-  const fetchData = useCallback(async () => {
-    try {
-      const [usersRes, statsRes] = await Promise.all([
-        axios.get(`${API_URL}/api/auth/users`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`${API_URL}/api/auth/stats`, { headers: { Authorization: `Bearer ${token}` } })
-      ]);
-      setUsers(usersRes.data);
-      setStats(statsRes.data);
-    } catch (err) { console.error(err); }
-    finally { setLoading(false); }
-  }, [token]);
-
-  useEffect(() => { fetchData(); }, [fetchData]);
-
-  if (loading) return <AdminLayout title="Users"><div className="flex items-center justify-center py-20"><div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full" /></div></AdminLayout>;
+  if (isLoading) return <AdminLayout title="Users"><div className="flex items-center justify-center py-20"><div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full" /></div></AdminLayout>;
 
   const totalUsers = users.length;
   const adminCount = users.filter(u => u.role === 'admin').length;
@@ -288,8 +286,8 @@ export default function AdminUsers() {
                   <label className="text-sm text-text-secondary mb-2 block">Password</label>
                   <input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required minLength={6} className="input-field" />
                 </div>
-                <button type="submit" disabled={createLoading} className="btn-primary w-full !py-3.5">
-                  {createLoading ? 'Creating...' : 'Create Admin'}
+                <button type="submit" disabled={createMutation.isPending} className="btn-primary w-full !py-3.5">
+                  {createMutation.isPending ? 'Creating...' : 'Create Admin'}
                 </button>
               </form>
             </motion.div>

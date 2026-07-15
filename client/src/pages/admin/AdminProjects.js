@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiPlus, FiEdit2, FiTrash2, FiEye, FiEyeOff, FiX, FiImage, FiCheck, FiChevronLeft, FiChevronRight, FiExternalLink, FiGithub, FiClock, FiFolder, FiVideo, FiSend, FiStar, FiUser, FiMaximize2, FiMinimize2 } from 'react-icons/fi';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination } from 'swiper/modules';
 import 'swiper/css';
@@ -8,7 +9,7 @@ import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import { useAuth } from '../../context/AuthContext';
 import AdminLayout from '../../components/AdminLayout';
-import axios from 'axios';
+import { queryClient } from '../../components/QueryProvider';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
@@ -57,7 +58,7 @@ const getFileUrl = (url) => {
 };
 
 export default function AdminProjects() {
-  const { token } = useAuth();
+  const { API } = useAuth();
   const [activeTab, setActiveTab] = useState('projects');
 
   return (
@@ -72,17 +73,14 @@ export default function AdminProjects() {
           <FiVideo className="inline mr-1.5" size={16} /> Videos
         </button>
       </div>
-      {activeTab === 'projects' ? <ProjectsSection token={token} /> : <VideosSection token={token} />}
+      {activeTab === 'projects' ? <ProjectsSection API={API} /> : <VideosSection API={API} />}
     </AdminLayout>
   );
 }
 
-function ProjectsSection({ token }) {
-  const [projects, setProjects] = useState([]);
-  const [loading, setLoading] = useState(true);
+function ProjectsSection({ API }) {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
-  const [submitting, setSubmitting] = useState(false);
   const [feedback, setFeedback] = useState({ show: false, type: '', message: '' });
   const imageRef = useRef(null);
   const videoRef = useRef(null);
@@ -93,21 +91,80 @@ function ProjectsSection({ token }) {
   const [removedImageIds, setRemovedImageIds] = useState([]);
   const [selectedProject, setSelectedProject] = useState(null);
 
-  const fetchProjects = async () => {
-    try {
-      setLoading(true);
-      const res = await axios.get(`${API_URL}/api/projects`, { headers: { Authorization: `Bearer ${token}` } });
-      setProjects(res.data.projects);
-    } catch (err) { console.error(err); }
-    finally { setLoading(false); }
-  };
-
-  useEffect(() => { fetchProjects(); }, [token]);
+  const { data: projects = [], isLoading } = useQuery({
+    queryKey: ['admin', 'projects'],
+    queryFn: async () => {
+      const res = await API.get('/projects');
+      return res.data.projects || [];
+    },
+  });
 
   const showFeedback = (type, message) => {
     setFeedback({ show: true, type, message });
     setTimeout(() => setFeedback({ show: false, type: '', message: '' }), 3000);
   };
+
+  const saveMutation = useMutation({
+    mutationFn: async () => {
+      const formData = new FormData();
+      formData.append('name', form.name);
+      formData.append('title', form.title);
+      formData.append('description', form.description);
+      formData.append('category', form.category);
+      formData.append('commentsEnabled', form.commentsEnabled);
+      formData.append('removedImages', JSON.stringify(removedImageIds));
+      form.tags.split(',').map(t => t.trim()).filter(Boolean).forEach(t => formData.append('tags', t));
+      imagePreviews.forEach(p => formData.append('images', p.file));
+      if (videoRef.current?.files?.length) {
+        Array.from(videoRef.current.files).forEach(f => formData.append('videos', f));
+      }
+      if (docRef.current?.files?.length) {
+        Array.from(docRef.current.files).forEach(f => formData.append('documents', f));
+      }
+      if (editing) {
+        const res = await API.put(`/projects/${editing}`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        return res.data;
+      } else {
+        const res = await API.post('/projects', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        return res.data;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'projects'] });
+      showFeedback('success', editing ? 'Project updated successfully!' : 'Project created successfully!');
+      resetForm();
+    },
+    onError: (err) => {
+      showFeedback('error', err.response?.data?.message || 'Failed to save project');
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id) => {
+      await API.delete(`/projects/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'projects'] });
+      showFeedback('success', 'Project deleted');
+    },
+    onError: () => showFeedback('error', 'Failed to delete'),
+  });
+
+  const toggleMutation = useMutation({
+    mutationFn: async (id) => {
+      const res = await API.patch(`/projects/${id}/toggle-publish`);
+      return res.data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'projects'] });
+      showFeedback('success', data.isPublished ? 'Project published!' : 'Project unpublished');
+    },
+    onError: () => showFeedback('error', 'Toggle failed'),
+  });
 
   const handleImageSelect = (e) => {
     const files = Array.from(e.target.files);
@@ -130,45 +187,9 @@ function ProjectsSection({ token }) {
     setRemovedImageIds(prev => [...prev, publicId]);
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    setSubmitting(true);
-    try {
-      const formData = new FormData();
-      formData.append('name', form.name);
-      formData.append('title', form.title);
-      formData.append('description', form.description);
-      formData.append('category', form.category);
-      formData.append('commentsEnabled', form.commentsEnabled);
-      formData.append('removedImages', JSON.stringify(removedImageIds));
-      form.tags.split(',').map(t => t.trim()).filter(Boolean).forEach(t => formData.append('tags', t));
-
-      imagePreviews.forEach(p => formData.append('images', p.file));
-
-      if (videoRef.current?.files?.length) {
-        Array.from(videoRef.current.files).forEach(f => formData.append('videos', f));
-      }
-      if (docRef.current?.files?.length) {
-        Array.from(docRef.current.files).forEach(f => formData.append('documents', f));
-      }
-
-      if (editing) {
-        const res = await axios.put(`${API_URL}/api/projects/${editing}`, formData, {
-          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
-        });
-        setProjects(prev => prev.map(p => p._id === editing ? res.data : p));
-        showFeedback('success', 'Project updated successfully!');
-      } else {
-        const res = await axios.post(`${API_URL}/api/projects`, formData, {
-          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
-        });
-        setProjects(prev => [res.data, ...prev]);
-        showFeedback('success', 'Project created successfully!');
-      }
-      resetForm();
-    } catch (err) {
-      showFeedback('error', err.response?.data?.message || 'Failed to save project');
-    } finally { setSubmitting(false); }
+    saveMutation.mutate();
   };
 
   const resetForm = () => {
@@ -183,21 +204,13 @@ function ProjectsSection({ token }) {
     if (docRef.current) docRef.current.value = '';
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = (id) => {
     if (!window.confirm('Delete this project permanently?')) return;
-    try {
-      await axios.delete(`${API_URL}/api/projects/${id}`, { headers: { Authorization: `Bearer ${token}` } });
-      setProjects(prev => prev.filter(p => p._id !== id));
-      showFeedback('success', 'Project deleted');
-    } catch (err) { showFeedback('error', 'Failed to delete'); }
+    deleteMutation.mutate(id);
   };
 
-  const togglePublish = async (id) => {
-    try {
-      const res = await axios.patch(`${API_URL}/api/projects/${id}/toggle-publish`, {}, { headers: { Authorization: `Bearer ${token}` } });
-      setProjects(prev => prev.map(p => p._id === id ? res.data : p));
-      showFeedback('success', res.data.isPublished ? 'Project published!' : 'Project unpublished');
-    } catch (err) { showFeedback('error', 'Toggle failed'); }
+  const togglePublish = (id) => {
+    toggleMutation.mutate(id);
   };
 
   const openNewForm = () => {
@@ -328,8 +341,8 @@ function ProjectsSection({ token }) {
             </div>
 
             <div className="flex gap-3 pt-2">
-              <button type="submit" disabled={submitting} className="btn-primary">
-                {submitting ? 'Saving...' : (editing ? 'Update Project' : 'Create Project')}
+              <button type="submit" disabled={saveMutation.isPending} className="btn-primary">
+                {saveMutation.isPending ? 'Saving...' : (editing ? 'Update Project' : 'Create Project')}
               </button>
               <button type="button" onClick={resetForm} className="btn-secondary">Cancel</button>
             </div>
@@ -337,7 +350,7 @@ function ProjectsSection({ token }) {
         </motion.div>
       )}
 
-      {loading ? (
+      {isLoading ? (
         <div className="text-center py-20"><div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto" /></div>
       ) : projects.length === 0 ? (
         <div className="text-center py-20">
@@ -496,48 +509,99 @@ function ProjectsSection({ token }) {
   );
 }
 
-function VideosSection({ token }) {
-  const [videos, setVideos] = useState([]);
-  const [loading, setLoading] = useState(true);
+function VideosSection({ API }) {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
-  const [submitting, setSubmitting] = useState(false);
   const [feedback, setFeedback] = useState({ show: false, type: '', message: '' });
   const [form, setForm] = useState({ title: '', description: '', category: 'web', tags: '', commentsEnabled: true });
   const [selectedVideo, setSelectedVideo] = useState(null);
   const [videoFile, setVideoFile] = useState(null);
   const [videoPreview, setVideoPreview] = useState('');
   const [fullscreenVideo, setFullscreenVideo] = useState(null);
-  const [comments, setComments] = useState([]);
-  const [ratingStats, setRatingStats] = useState({ average: 0, count: 0 });
 
-  const fetchVideos = async () => {
-    try {
-      setLoading(true);
-      const res = await axios.get(`${API_URL}/api/videos`, { headers: { Authorization: `Bearer ${token}` } });
-      setVideos(res.data.videos);
-    } catch (err) { console.error(err); }
-    finally { setLoading(false); }
-  };
+  const { data: videos = [], isLoading } = useQuery({
+    queryKey: ['admin', 'videos'],
+    queryFn: async () => {
+      const res = await API.get('/videos');
+      return res.data.videos || [];
+    },
+  });
 
-  useEffect(() => { fetchVideos(); }, [token]);
+  const { data: commentsData } = useQuery({
+    queryKey: ['admin', 'video-comments', selectedVideo?._id],
+    queryFn: async () => {
+      if (!selectedVideo?._id) return { comments: [], stats: { average: 0, count: 0 } };
+      const res = await API.get(`/comments/video/${selectedVideo._id}`);
+      return res.data;
+    },
+    enabled: !!selectedVideo?._id,
+  });
 
-  useEffect(() => {
-    if (!selectedVideo?._id) return;
-    const fetchComments = async () => {
-      try {
-        const res = await axios.get(`${API_URL}/api/comments/video/${selectedVideo._id}`);
-        setComments(res.data.comments || []);
-        setRatingStats(res.data.stats || { average: 0, count: 0 });
-      } catch (err) { console.error(err); }
-    };
-    fetchComments();
-  }, [selectedVideo?._id]);
+  const comments = commentsData?.comments || [];
+  const ratingStats = commentsData?.stats || { average: 0, count: 0 };
 
   const showFeedback = (type, message) => {
     setFeedback({ show: true, type, message });
     setTimeout(() => setFeedback({ show: false, type: '', message: '' }), 3000);
   };
+
+  const saveMutation = useMutation({
+    mutationFn: async () => {
+      if (!editing && !videoFile) {
+        throw new Error('Please select a video file');
+      }
+      const formData = new FormData();
+      formData.append('title', form.title);
+      formData.append('description', form.description);
+      formData.append('category', form.category);
+      formData.append('commentsEnabled', form.commentsEnabled);
+      form.tags.split(',').map(t => t.trim()).filter(Boolean).forEach(t => formData.append('tags', t));
+      if (videoFile) formData.append('video', videoFile);
+
+      if (editing) {
+        const res = await API.put(`/videos/${editing}`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        return res.data;
+      } else {
+        const res = await API.post('/videos', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        return res.data;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'videos'] });
+      showFeedback('success', editing ? 'Video updated successfully!' : 'Video uploaded successfully!');
+      resetForm();
+    },
+    onError: (err) => {
+      showFeedback('error', err.response?.data?.message || err.message || 'Failed to save video');
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id) => {
+      await API.delete(`/videos/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'videos'] });
+      showFeedback('success', 'Video deleted');
+    },
+    onError: () => showFeedback('error', 'Failed to delete'),
+  });
+
+  const toggleMutation = useMutation({
+    mutationFn: async (id) => {
+      const res = await API.patch(`/videos/${id}/toggle-publish`);
+      return res.data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'videos'] });
+      showFeedback('success', data.isPublished ? 'Video published!' : 'Video unpublished');
+    },
+    onError: () => showFeedback('error', 'Toggle failed'),
+  });
 
   const handleFileSelect = (e) => {
     const file = e.target.files?.[0];
@@ -552,39 +616,9 @@ function VideosSection({ token }) {
     setVideoPreview(URL.createObjectURL(file));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    if (!editing && !videoFile) {
-      showFeedback('error', 'Please select a video file');
-      return;
-    }
-    setSubmitting(true);
-    try {
-      const formData = new FormData();
-      formData.append('title', form.title);
-      formData.append('description', form.description);
-      formData.append('category', form.category);
-      formData.append('commentsEnabled', form.commentsEnabled);
-      form.tags.split(',').map(t => t.trim()).filter(Boolean).forEach(t => formData.append('tags', t));
-      if (videoFile) formData.append('video', videoFile);
-
-      if (editing) {
-        const res = await axios.put(`${API_URL}/api/videos/${editing}`, formData, {
-          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
-        });
-        setVideos(prev => prev.map(v => v._id === editing ? res.data : v));
-        showFeedback('success', 'Video updated successfully!');
-      } else {
-        const res = await axios.post(`${API_URL}/api/videos`, formData, {
-          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
-        });
-        setVideos(prev => [res.data, ...prev]);
-        showFeedback('success', 'Video uploaded successfully!');
-      }
-      resetForm();
-    } catch (err) {
-      showFeedback('error', err.response?.data?.message || 'Failed to save video');
-    } finally { setSubmitting(false); }
+    saveMutation.mutate();
   };
 
   const resetForm = () => {
@@ -611,21 +645,13 @@ function VideosSection({ token }) {
     setShowForm(true);
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = (id) => {
     if (!window.confirm('Delete this video permanently?')) return;
-    try {
-      await axios.delete(`${API_URL}/api/videos/${id}`, { headers: { Authorization: `Bearer ${token}` } });
-      setVideos(prev => prev.filter(v => v._id !== id));
-      showFeedback('success', 'Video deleted');
-    } catch (err) { showFeedback('error', 'Failed to delete'); }
+    deleteMutation.mutate(id);
   };
 
-  const togglePublish = async (id) => {
-    try {
-      const res = await axios.patch(`${API_URL}/api/videos/${id}/toggle-publish`, {}, { headers: { Authorization: `Bearer ${token}` } });
-      setVideos(prev => prev.map(v => v._id === id ? res.data : v));
-      showFeedback('success', res.data.isPublished ? 'Video published!' : 'Video unpublished');
-    } catch (err) { showFeedback('error', 'Toggle failed'); }
+  const togglePublish = (id) => {
+    toggleMutation.mutate(id);
   };
 
   return (
@@ -686,8 +712,8 @@ function VideosSection({ token }) {
               />
             </div>
             <div className="flex gap-3 pt-2">
-              <button type="submit" disabled={submitting} className="btn-primary">
-                {submitting ? 'Saving...' : (editing ? 'Update Video' : 'Upload Video')}
+              <button type="submit" disabled={saveMutation.isPending} className="btn-primary">
+                {saveMutation.isPending ? 'Saving...' : (editing ? 'Update Video' : 'Upload Video')}
               </button>
               <button type="button" onClick={resetForm} className="btn-secondary">Cancel</button>
             </div>
@@ -695,7 +721,7 @@ function VideosSection({ token }) {
         </motion.div>
       )}
 
-      {loading ? (
+      {isLoading ? (
         <div className="text-center py-20"><div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto" /></div>
       ) : videos.length === 0 ? (
         <div className="text-center py-20">

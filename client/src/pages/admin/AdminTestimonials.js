@@ -1,45 +1,58 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { FiPlus, FiEdit2, FiTrash2, FiX, FiStar } from 'react-icons/fi';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { useAuth } from '../../context/AuthContext';
 import AdminLayout from '../../components/AdminLayout';
-import axios from 'axios';
+import { queryClient } from '../../components/QueryProvider';
 
 export default function AdminTestimonials() {
-  const { token } = useAuth();
-  const [testimonials, setTestimonials] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { API } = useAuth();
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({ clientName: '', company: '', position: '', review: '', rating: 5 });
 
-  useEffect(() => {
-    const fetch = async () => {
-      try { const res = await axios.get(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/testimonials`, { headers: { Authorization: `Bearer ${token}` } }); setTestimonials(res.data); }
-      catch (err) { console.error(err); }
-      finally { setLoading(false); }
-    };
-    fetch();
-  }, [token]);
+  const { data: testimonials = [], isLoading } = useQuery({
+    queryKey: ['admin', 'testimonials'],
+    queryFn: async () => {
+      const res = await API.get('/testimonials');
+      return res.data || [];
+    },
+  });
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
+  const saveMutation = useMutation({
+    mutationFn: async (formData) => {
       if (editing) {
-        const res = await axios.put(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/testimonials/${editing}`, form, { headers: { Authorization: `Bearer ${token}` } });
-        setTestimonials(prev => prev.map(t => t._id === editing ? res.data : t));
+        const res = await API.put(`/testimonials/${editing}`, formData);
+        return res.data;
       } else {
-        const res = await axios.post(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/testimonials`, form, { headers: { Authorization: `Bearer ${token}` } });
-        setTestimonials(prev => [res.data, ...prev]);
+        const res = await API.post('/testimonials', formData);
+        return res.data;
       }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'testimonials'] });
       setShowForm(false); setEditing(null); setForm({ clientName: '', company: '', position: '', review: '', rating: 5 });
-    } catch (err) { console.error(err); }
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id) => {
+      await API.delete(`/testimonials/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'testimonials'] });
+    },
+  });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    saveMutation.mutate(form);
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = (id) => {
     if (!window.confirm('Delete this testimonial?')) return;
-    try { await axios.delete(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/testimonials/${id}`, { headers: { Authorization: `Bearer ${token}` } }); setTestimonials(prev => prev.filter(t => t._id !== id)); }
-    catch (err) { console.error(err); }
+    deleteMutation.mutate(id);
   };
 
   return (
@@ -74,7 +87,7 @@ export default function AdminTestimonials() {
         </motion.div>
       )}
 
-      {loading ? (
+      {isLoading ? (
         <div className="text-center py-20"><div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto" /></div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

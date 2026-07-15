@@ -3,12 +3,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { io } from 'socket.io-client';
 import { FiSend, FiPaperclip, FiTrash2, FiX, FiDownload, FiMaximize2, FiMessageCircle, FiUser, FiCpu, FiClock, FiCheck, FiChevronLeft, FiImage, FiVideo, FiFile, FiMic, FiSearch } from 'react-icons/fi';
 import { FaWhatsapp } from 'react-icons/fa';
+import { useQuery } from '@tanstack/react-query';
 import AdminLayout from '../../components/AdminLayout';
-import axios from 'axios';
 import VoiceNotePlayer from '../../components/VoiceNotePlayer';
 
-const API = process.env.REACT_APP_API_URL || 'http://localhost:5000';
-const SOCKET_URL = API;
+const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+const SOCKET_URL = API_BASE;
 
 export default function AdminChat() {
   const [conversations, setConversations] = useState([]);
@@ -35,13 +35,19 @@ export default function AdminChat() {
   const streamRef = useRef(null);
   const cancelRef = useRef(false);
 
+  const { data: fetchedConversations = [] } = useQuery({
+    queryKey: ['admin', 'chat-conversations', search],
+    queryFn: async () => {
+      const url = search ? `/api/chat/conversations?search=${encodeURIComponent(search)}` : `/api/chat/conversations`;
+      const res = await fetch(`${API_BASE}${url}`);
+      return res.json();
+    },
+    staleTime: search ? 5000 : 30000,
+  });
+
   useEffect(() => {
-    const timer = setTimeout(() => {
-      const url = search ? `${API}/api/chat/conversations?search=${encodeURIComponent(search)}` : `${API}/api/chat/conversations`;
-      fetch(url).then(r => r.json()).then(setConversations).catch(() => {});
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [search]);
+    setConversations(fetchedConversations);
+  }, [fetchedConversations]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -80,16 +86,24 @@ export default function AdminChat() {
     return () => { socket.emit('leave_admin'); socket.disconnect(); };
   }, [selectedConv]);
 
-  const selectConversation = async (conv) => {
+  const { data: convMessages = [] } = useQuery({
+    queryKey: ['admin', 'chat-messages', selectedConv?._id],
+    queryFn: async () => {
+      if (!selectedConv) return [];
+      const res = await fetch(`${API_BASE}/api/chat/conversation/${selectedConv._id}`);
+      return res.json();
+    },
+    enabled: !!selectedConv,
+  });
+
+  useEffect(() => {
+    setMessages(convMessages);
+  }, [convMessages]);
+
+  const selectConversation = (conv) => {
     setSelectedConv(conv);
     if (window.innerWidth < 768) setShowSidebar(false);
-    try {
-      const res = await fetch(`${API}/api/chat/conversation/${conv._id}`);
-      const data = await res.json();
-      setMessages(data);
-      setTimeout(scrollToBottom, 50);
-      setConversations(prev => prev.map(c => c._id === conv._id ? { ...c, unreadCount: 0 } : c));
-    } catch {}
+    setTimeout(scrollToBottom, 100);
   };
 
   const sendReply = async () => {
@@ -109,7 +123,7 @@ export default function AdminChat() {
       form.append('conversationId', selectedConv._id);
       form.append('sender', 'admin');
       try {
-        await axios.post(`${API}/api/whatsapp/send-media`, form);
+        await fetch(`${API_BASE}/api/whatsapp/send-media`, { method: 'POST', body: form });
         setTimeout(scrollToBottom, 100);
       } catch {}
       setSelectedFile(null);

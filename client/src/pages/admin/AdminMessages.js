@@ -1,46 +1,49 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { FiMessageCircle, FiUser, FiMenu, FiX } from 'react-icons/fi';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { useAuth } from '../../context/AuthContext';
 import AdminLayout from '../../components/AdminLayout';
-import axios from 'axios';
+import { queryClient } from '../../components/QueryProvider';
 
 export default function AdminMessages() {
-  const { token } = useAuth();
-  const [conversations, setConversations] = useState([]);
+  const { API } = useAuth();
   const [selected, setSelected] = useState(null);
-  const [messages, setMessages] = useState([]);
   const [reply, setReply] = useState('');
   const [showMobileList, setShowMobileList] = useState(false);
 
-  useEffect(() => {
-    const fetchConversations = async () => {
-      try {
-        const res = await axios.get(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/messages/conversations`, { headers: { Authorization: `Bearer ${token}` } });
-        setConversations(res.data);
-      } catch (err) { console.error(err); }
-    };
-    fetchConversations();
-  }, [token]);
+  const { data: conversations = [] } = useQuery({
+    queryKey: ['admin', 'conversations'],
+    queryFn: async () => {
+      const res = await API.get('/messages/conversations');
+      return res.data || [];
+    },
+  });
 
-  useEffect(() => {
-    if (!selected) return;
-    const fetchMessages = async () => {
-      try {
-        const res = await axios.get(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/messages?conversationId=${selected}`, { headers: { Authorization: `Bearer ${token}` } });
-        setMessages(res.data.messages || []);
-        await axios.put(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/messages/read`, { conversationId: selected }, { headers: { Authorization: `Bearer ${token}` } });
-      } catch (err) { console.error(err); }
-    };
-    fetchMessages();
-  }, [selected, token]);
+  const { data: messages = [] } = useQuery({
+    queryKey: ['admin', 'messages', selected],
+    queryFn: async () => {
+      if (!selected) return [];
+      const res = await API.get(`/messages?conversationId=${selected}`);
+      await API.put('/messages/read', { conversationId: selected });
+      return res.data.messages || [];
+    },
+    enabled: !!selected,
+  });
 
-  const sendReply = async () => {
-    if (!reply.trim() || !selected) return;
-    try {
-      await axios.post(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/messages`, { conversationId: selected, content: reply }, { headers: { Authorization: `Bearer ${token}` } });
-      setMessages(prev => [...prev, { _id: Date.now(), sender: 'admin', content: reply, createdAt: new Date().toISOString() }]);
+  const sendReplyMutation = useMutation({
+    mutationFn: async () => {
+      if (!reply.trim() || !selected) return;
+      await API.post('/messages', { conversationId: selected, content: reply });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'messages', selected] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'conversations'] });
       setReply('');
-    } catch (err) { console.error(err); }
+    },
+  });
+
+  const sendReply = () => {
+    sendReplyMutation.mutate();
   };
 
   return (

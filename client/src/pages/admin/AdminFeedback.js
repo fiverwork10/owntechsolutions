@@ -1,15 +1,15 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { FiStar, FiMessageSquare, FiUsers, FiTrash2, FiThumbsUp, FiCalendar } from 'react-icons/fi';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { io } from 'socket.io-client';
 import { format, parseISO } from 'date-fns';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip as ReTooltip, Cell } from 'recharts';
 import { useAuth } from '../../context/AuthContext';
 import AdminLayout from '../../components/AdminLayout';
-import axios from 'axios';
+import { queryClient } from '../../components/QueryProvider';
 
 const SOCKET_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 const COLORS = {
   purple: '#8B5CF6', green: '#10B981', blue: '#3B82F6',
@@ -52,44 +52,40 @@ function StatCard({ icon: Icon, label, value, color, subtitle }) {
 }
 
 export default function AdminFeedback() {
-  const { token } = useAuth();
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { API } = useAuth();
 
-  const fetchStats = useCallback(async () => {
-    try {
-      const res = await axios.get(`${API_URL}/api/comments/stats`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setData(res.data);
-    } catch (err) { console.error(err); }
-    finally { setLoading(false); }
-  }, [token]);
+  const { data, isLoading } = useQuery({
+    queryKey: ['admin', 'feedback'],
+    queryFn: async () => {
+      const res = await API.get('/comments/stats');
+      return res.data;
+    },
+  });
 
-  useEffect(() => { fetchStats(); }, [fetchStats]);
-
-  useEffect(() => {
+  React.useEffect(() => {
     const socket = io(SOCKET_URL);
     socket.emit('join_admin');
-    socket.on('comment:new', () => { fetchStats(); });
+    socket.on('comment:new', () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'feedback'] });
+    });
     return () => { socket.emit('leave_admin'); socket.disconnect(); };
-  }, [fetchStats]);
+  }, []);
 
-  const handleDelete = async (id) => {
+  const deleteMutation = useMutation({
+    mutationFn: async (id) => {
+      await API.delete(`/comments/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'feedback'] });
+    },
+  });
+
+  const handleDelete = (id) => {
     if (!window.confirm('Delete this feedback?')) return;
-    try {
-      await axios.delete(`${API_URL}/api/comments/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setData(prev => ({
-        ...prev,
-        totalFeedback: prev.totalFeedback - 1,
-        recentFeedback: prev.recentFeedback.filter(c => c._id !== id)
-      }));
-    } catch (err) { console.error(err); }
+    deleteMutation.mutate(id);
   };
 
-  if (loading) return <AdminLayout title="Feedback"><div className="flex items-center justify-center py-20"><div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full" /></div></AdminLayout>;
+  if (isLoading) return <AdminLayout title="Feedback"><div className="flex items-center justify-center py-20"><div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full" /></div></AdminLayout>;
 
   const avgRating = data?.averageRating || 0;
   const ratingDist = data?.ratingDistribution || [];

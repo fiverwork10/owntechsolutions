@@ -1,45 +1,58 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiTrash2, FiMail, FiPhone, FiCheck, FiClock, FiMessageCircle, FiChevronLeft, FiArrowLeft, FiMessageSquare } from 'react-icons/fi';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import AdminLayout from '../../components/AdminLayout';
-import axios from 'axios';
-
-const API = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+import { queryClient } from '../../components/QueryProvider';
 
 export default function AdminContacts() {
-  const { token } = useAuth();
+  const { API } = useAuth();
   const navigate = useNavigate();
-  const [contacts, setContacts] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [selectedContact, setSelectedContact] = useState(null);
   const [showList, setShowList] = useState(true);
 
-  useEffect(() => {
-    const fetch = async () => {
-      try { const res = await axios.get(`${API}/api/contacts`, { headers: { Authorization: `Bearer ${token}` } }); setContacts(res.data.contacts); }
-      catch (err) { console.error(err); }
-      finally { setLoading(false); }
-    };
-    fetch();
-  }, [token]);
+  const { data: contacts = [], isLoading } = useQuery({
+    queryKey: ['admin', 'contacts'],
+    queryFn: async () => {
+      const res = await API.get('/contacts');
+      return res.data.contacts || [];
+    },
+  });
 
-  const selectContact = async (contact) => {
+  const readMutation = useMutation({
+    mutationFn: async (contact) => {
+      if (!contact.isRead) {
+        await API.patch(`/contacts/${contact._id}/read`);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'contacts'] });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id) => {
+      await API.delete(`/contacts/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'contacts'] });
+      if (selectedContact?._id === id) setSelectedContact(null);
+    },
+  });
+
+  const selectContact = (contact) => {
     setSelectedContact(contact);
     setShowList(false);
     if (!contact.isRead) {
-      try {
-        await axios.patch(`${API}/api/contacts/${contact._id}/read`, {}, { headers: { Authorization: `Bearer ${token}` } });
-        setContacts(prev => prev.map(c => c._id === contact._id ? { ...c, isRead: true } : c));
-      } catch {}
+      readMutation.mutate(contact);
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = (id) => {
     if (!window.confirm('Delete this contact?')) return;
-    try { await axios.delete(`${API}/api/contacts/${id}`, { headers: { Authorization: `Bearer ${token}` } }); setContacts(prev => prev.filter(c => c._id !== id)); if (selectedContact?._id === id) setSelectedContact(null); }
-    catch (err) { console.error(err); }
+    deleteMutation.mutate(id);
   };
 
   const formatTime = (d) => {
@@ -57,7 +70,9 @@ export default function AdminContacts() {
             <h2 className="font-bold text-sm md:text-base flex items-center gap-2"><FiMail className="text-primary" /> Contacts</h2>
           </div>
           <div className="flex-1 overflow-y-auto p-2 space-y-1">
-            {contacts.length === 0 ? (
+            {isLoading ? (
+              <div className="p-8 text-center text-white/40 text-sm">Loading...</div>
+            ) : contacts.length === 0 ? (
               <div className="p-8 text-center text-white/40 text-sm">No contacts yet</div>
             ) : (
               contacts.map((contact, i) => (

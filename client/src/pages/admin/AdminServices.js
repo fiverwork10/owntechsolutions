@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { FiPlus, FiEdit2, FiTrash2, FiX, FiCheck, FiCode, FiSmartphone, FiLayout, FiServer, FiCloud, FiDatabase, FiGrid, FiMonitor, FiShield } from 'react-icons/fi';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { useAuth } from '../../context/AuthContext';
 import AdminLayout from '../../components/AdminLayout';
-import axios from 'axios';
+import { queryClient } from '../../components/QueryProvider';
 
 const iconOptions = [
   { value: 'FiCode', label: 'Code', icon: FiCode },
@@ -22,42 +23,55 @@ const iconMap = Object.fromEntries(iconOptions.map(o => [o.value, o.icon]));
 const colorOptions = ['#8B5CF6', '#A78BFA', '#C084FC', '#6D28D9', '#7C3AED', '#9333EA', '#EC4899', '#F59E0B', '#10B981', '#3B82F6'];
 
 export default function AdminServices() {
-  const { token } = useAuth();
-  const [services, setServices] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { API } = useAuth();
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({ title: '', price: '', description: '', features: '', technologies: '', icon: 'FiCode', color: '#8B5CF6', isActive: true, order: 0 });
 
-  const fetchServices = async () => {
-    try { const res = await axios.get(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/services`, { headers: { Authorization: `Bearer ${token}` } }); setServices(res.data.services); }
-    catch (err) { console.error(err); }
-    finally { setLoading(false); }
-  };
-
-  useEffect(() => { fetchServices(); }, [token]);
+  const { data: services = [], isLoading } = useQuery({
+    queryKey: ['admin', 'services'],
+    queryFn: async () => {
+      const res = await API.get('/services');
+      return res.data.services || [];
+    },
+  });
 
   const resetForm = () => setForm({ title: '', price: '', description: '', features: '', technologies: '', icon: 'FiCode', color: '#8B5CF6', isActive: true, order: 0 });
 
-  const handleSubmit = async (e) => {
+  const saveMutation = useMutation({
+    mutationFn: async (data) => {
+      if (editing) {
+        const res = await API.put(`/services/${editing}`, data);
+        return res.data;
+      } else {
+        const res = await API.post('/services', data);
+        return res.data;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'services'] });
+      setShowForm(false); setEditing(null); resetForm();
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id) => {
+      await API.delete(`/services/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'services'] });
+    },
+  });
+
+  const handleSubmit = (e) => {
     e.preventDefault();
     const data = { ...form, features: form.features.split('\n').map(s => s.trim()).filter(Boolean), technologies: form.technologies.split('\n').map(s => s.trim()).filter(Boolean) };
-    try {
-      if (editing) {
-        const res = await axios.put(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/services/${editing}`, data, { headers: { Authorization: `Bearer ${token}` } });
-        setServices(prev => prev.map(s => s._id === editing ? res.data : s));
-      } else {
-        const res = await axios.post(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/services`, data, { headers: { Authorization: `Bearer ${token}` } });
-        setServices(prev => [res.data, ...prev]);
-      }
-      setShowForm(false); setEditing(null); resetForm();
-    } catch (err) { console.error(err); }
+    saveMutation.mutate(data);
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = (id) => {
     if (!window.confirm('Delete this service?')) return;
-    try { await axios.delete(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/services/${id}`, { headers: { Authorization: `Bearer ${token}` } }); setServices(prev => prev.filter(s => s._id !== id)); }
-    catch (err) { console.error(err); }
+    deleteMutation.mutate(id);
   };
 
   const openEdit = (service) => {
@@ -123,7 +137,7 @@ export default function AdminServices() {
         </motion.div>
       )}
 
-      {loading ? (
+      {isLoading ? (
         <div className="text-center py-20"><div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto" /></div>
       ) : services.length === 0 ? (
         <div className="text-center py-20 text-white/50">No services yet</div>

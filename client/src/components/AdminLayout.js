@@ -1,12 +1,11 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiLogOut, FiFolder, FiMail, FiBarChart2, FiHelpCircle, FiStar, FiMenu, FiX, FiGrid, FiChevronLeft, FiMessageSquare, FiThumbsUp, FiUsers, FiBell } from 'react-icons/fi';
+import { useQuery } from '@tanstack/react-query';
 import { io } from 'socket.io-client';
-import { useAuth } from '../context/AuthContext';
-import axios from 'axios';
+import { useAuth, API } from '../context/AuthContext';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 const SOCKET_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 const adminLinks = [
@@ -42,18 +41,20 @@ export default function AdminLayout({ children, title }) {
   const [showNotifications, setShowNotifications] = useState(false);
   const notifRef = useRef(null);
 
-  const fetchNotifications = useCallback(async () => {
-    if (!token) return;
-    try {
-      const res = await axios.get(`${API_URL}/api/notifications`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setNotifications(res.data.notifications || []);
-      setUnreadCount(res.data.unreadCount || 0);
-    } catch {}
-  }, [token]);
+  const { data: notifData } = useQuery({
+    queryKey: ['admin', 'notifications'],
+    queryFn: async () => {
+      const res = await API.get('/notifications');
+      return res.data;
+    },
+  });
 
-  useEffect(() => { fetchNotifications(); }, [fetchNotifications]);
+  useEffect(() => {
+    if (notifData) {
+      setNotifications(notifData.notifications || []);
+      setUnreadCount(notifData.unreadCount || 0);
+    }
+  }, [notifData]);
 
   useEffect(() => {
     const socket = io(SOCKET_URL);
@@ -75,9 +76,7 @@ export default function AdminLayout({ children, title }) {
 
   const markAsRead = async (id) => {
     try {
-      await axios.put(`${API_URL}/api/notifications/${id}/read`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await API.put(`/notifications/${id}/read`);
       setNotifications(prev => prev.map(n => n._id === id ? { ...n, isRead: true } : n));
       setUnreadCount(prev => Math.max(0, prev - 1));
     } catch {}
