@@ -35,6 +35,7 @@ export default function AdminChat() {
   const recordingTimerRef = useRef(null);
   const streamRef = useRef(null);
   const cancelRef = useRef(false);
+  const thumbRef = useRef(null);
 
   const { data: fetchedConversations = [] } = useQuery({
     queryKey: ['admin', 'chat-conversations', search],
@@ -122,18 +123,21 @@ export default function AdminChat() {
       setSendingMedia(true);
       const form = new FormData();
       form.append('file', selectedFile);
-      form.append('type', selectedFile.type.startsWith('image') ? 'image' : selectedFile.type.startsWith('video') ? 'video' : 'document');
+      const fileType = selectedFile.type.startsWith('image') ? 'image' : selectedFile.type.startsWith('video') ? 'video' : 'document';
+      form.append('type', fileType);
       form.append('caption', text);
       form.append('guestId', selectedConv.guestId);
       form.append('conversationId', selectedConv._id);
       form.append('sender', 'admin');
+      const thumbUrl = thumbRef.current?.thumbUrl;
       setMessages(prev => [...prev, {
         _id: `temp_${Date.now()}`,
         sender: 'admin',
-        content: text || (selectedFile.type.startsWith('image') ? '📷 Image' : selectedFile.type.startsWith('video') ? '🎬 Video' : '📎 Document'),
+        content: text || '',
         createdAt: new Date().toISOString(),
-        fileUrl: selectedFile.type.startsWith('image') ? URL.createObjectURL(selectedFile) : undefined,
-        messageType: selectedFile.type.startsWith('image') ? 'image' : selectedFile.type.startsWith('video') ? 'video' : 'document',
+        fileUrl: fileType === 'image' || fileType === 'video' ? (thumbUrl || URL.createObjectURL(selectedFile)) : undefined,
+        fileName: selectedFile.name,
+        messageType: fileType,
         sending: true
       }]);
       try {
@@ -141,6 +145,7 @@ export default function AdminChat() {
       } catch {}
       setSelectedFile(null);
       setFilePreview(null);
+      thumbRef.current = null;
       setSendingMedia(false);
       return;
     }
@@ -181,14 +186,45 @@ export default function AdminChat() {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendReply(); }
   };
 
-  const handleFileSelect = (e) => {
+  const createThumbnail = (file, maxSize = 200) => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > height) {
+          if (width > maxSize) { height *= maxSize / width; width = maxSize; }
+        } else {
+          if (height > maxSize) { width *= maxSize / height; height = maxSize; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+        canvas.toBlob((blob) => {
+          URL.revokeObjectURL(url);
+          resolve(blob);
+        }, 'image/jpeg', 0.85);
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+      img.src = url;
+    });
+  };
+
+  const handleFileSelect = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setShowUploadMenu(false);
     setSelectedFile(file);
-    if (file.type.startsWith('image/')) setFilePreview({ type: 'image', url: URL.createObjectURL(file) });
-    else if (file.type.startsWith('video/')) setFilePreview({ type: 'video', url: URL.createObjectURL(file) });
-    else setFilePreview({ type: 'document', name: file.name, size: (file.size / 1024).toFixed(1) + ' KB' });
+    if (file.type.startsWith('image/')) {
+      const thumb = await createThumbnail(file);
+      const thumbUrl = URL.createObjectURL(thumb);
+      thumbRef.current = { file, thumbUrl };
+      setFilePreview({ type: 'image', url: thumbUrl });
+    } else if (file.type.startsWith('video/')) {
+      thumbRef.current = { file, thumbUrl: URL.createObjectURL(file) };
+      setFilePreview({ type: 'video', url: thumbRef.current.thumbUrl });
+    } else setFilePreview({ type: 'document', name: file.name, size: (file.size / 1024).toFixed(1) + ' KB' });
   };
 
   const triggerFilePick = (accept) => {
