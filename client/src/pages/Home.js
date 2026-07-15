@@ -11,7 +11,7 @@ import { useForm } from 'react-hook-form';
 import axios from 'axios';
 import 'swiper/css';
 import 'swiper/css/pagination';
-import Hero3D from '../components/Hero3D';
+
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -38,7 +38,6 @@ function Home() {
   const aboutRef = useRef(null);
   const contactRef = useRef(null);
   const heroRef = useRef(null);
-  const sceneRef = useRef(null);
   const [showAbout, setShowAbout] = useState(false);
   const [typedText, setTypedText] = useState('');
   const [contactSuccess, setContactSuccess] = useState('');
@@ -114,19 +113,9 @@ function Home() {
 
       <section
         ref={heroRef}
-        className="relative min-h-screen overflow-hidden pt-16 md:pt-20"
+        className="relative min-h-screen flex items-center overflow-hidden pt-16 md:pt-20"
       >
-        <div className="grid grid-cols-1 lg:grid-cols-2 min-h-screen">
-          <div
-            ref={sceneRef}
-            className="hidden md:block relative h-[45vh] sm:h-[50vh] lg:h-screen order-1 lg:order-2"
-          >
-            <div className="absolute inset-0">
-              <Hero3D />
-            </div>
-            <div className="hidden md:block absolute inset-0 bg-gradient-to-l from-background/90 via-background/50 to-transparent z-10" />
-          </div>
-          <div className="relative z-10 flex items-center px-4 sm:px-6 lg:px-12 xl:px-16 py-6 md:py-12 lg:py-0 order-2 lg:order-1 overflow-hidden">
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 xl:px-16 py-6 md:py-12">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.02] via-transparent to-primary/[0.04]" />
             <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/5 rounded-full blur-[100px]" />
             <div className="absolute -bottom-20 -left-20 w-60 h-60 bg-primary/5 rounded-full blur-[80px]" />
@@ -154,7 +143,6 @@ function Home() {
               </motion.div>
             </div>
           </div>
-        </div>
         <div className="absolute bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 z-10 animate-bounce">
           <div className="w-6 h-10 rounded-full border-2 border-primary/50 flex items-start justify-center p-1">
             <div className="w-1.5 h-3 rounded-full bg-primary animate-pulse" />
