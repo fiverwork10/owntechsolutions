@@ -1,4 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
+
+const waveKeyframesId = 'wave-keyframes';
+if (!document.getElementById(waveKeyframesId)) {
+  const s = document.createElement('style');
+  s.id = waveKeyframesId;
+  s.textContent = `@keyframes wave-line { 0%, 100% { transform: scaleY(0.3); opacity: 0.3; } 50% { transform: scaleY(1); opacity: 1; } }`;
+  document.head.appendChild(s);
+}
 import { Link } from 'react-router-dom';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -109,18 +117,32 @@ function Home() {
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/10 rounded-full blur-[120px]" />
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-primary/10 rounded-full blur-[120px]" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[200px]" />
-        <div className="relative z-10 flex flex-col items-center text-center px-6 sm:px-8 lg:px-12 max-w-6xl mx-auto gap-4 md:gap-5">
+        <div className="relative z-10 flex flex-col items-center text-center px-6 sm:px-8 lg:px-12 max-w-6xl mx-auto gap-3 md:gap-5">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: 'easeOut' }} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full glass text-primary-light text-sm sm:text-base">
             <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
             Welcome to OwnTechSolutions
           </motion.div>
-          <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.15, ease: 'easeOut' }} className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black leading-none md:leading-tight tracking-tight" style={{ textShadow: '0 0 30px rgba(139,92,246,0.25), 0 0 60px rgba(139,92,246,0.12), 0 0 120px rgba(139,92,246,0.06)' }}>
+          <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.15, ease: 'easeOut' }} className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-black leading-none md:leading-tight tracking-tight" style={{ textShadow: '0 0 30px rgba(139,92,246,0.25), 0 0 60px rgba(139,92,246,0.12), 0 0 120px rgba(139,92,246,0.06)' }}>
             Transforming Ideas Into{' '}
             <span className="gradient-text" style={{ textShadow: '0 0 30px rgba(139,92,246,0.6), 0 0 80px rgba(139,92,246,0.3), 0 0 150px rgba(139,92,246,0.15)' }}>Powerful Digital</span>{' '}
             Solutions
           </motion.h1>
-          <div className="w-20 h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent rounded-full opacity-60 my-1 md:my-2" />
-          <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.3, ease: 'easeOut' }} className="text-base sm:text-lg md:text-xl lg:text-2xl text-text-secondary max-w-3xl leading-relaxed font-light">
+          <div className="relative w-full max-w-[250px] sm:max-w-[350px] md:max-w-[450px] h-6 md:h-10 my-1 md:my-2 overflow-hidden">
+            <div className="absolute inset-0 flex items-center justify-center gap-[2px] md:gap-[3px]">
+              {Array.from({ length: 50 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="w-[2px] md:w-[3px] rounded-full bg-gradient-to-t from-primary/50 via-primary/20 to-transparent origin-bottom"
+                  style={{
+                    height: `${35 + Math.abs(Math.sin(i * 0.4)) * 65}%`,
+                    animation: `wave-line ${1.8 + Math.sin(i * 0.3) * 0.5}s ease-in-out infinite`,
+                    animationDelay: `${i * 0.04}s`,
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+          <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.3, ease: 'easeOut' }} className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-text-secondary max-w-4xl leading-relaxed font-light">
             MERN Stack Development, Mobile Applications, Enterprise Solutions & UI/UX Design. We build digital products that drive business growth.
           </motion.p>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.45, ease: 'easeOut' }} className="flex flex-col sm:flex-row gap-3 sm:gap-5 mt-2 md:mt-4">
