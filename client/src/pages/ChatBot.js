@@ -65,7 +65,7 @@ export default function ChatBot() {
     socket.on('user:new_message', (msg) => {
       if (msg.conversationId) setConversationId(msg.conversationId);
       setMessages(prev => {
-        if (prev.some(m => m._id === msg._id || (m._id?.startsWith('temp') && msg.content === m.content && msg.sender === m.sender))) return prev;
+        if (prev.some(m => m._id === msg._id)) return prev;
         return [...prev, msg];
       });
     });
@@ -92,18 +92,21 @@ export default function ChatBot() {
     setSending(true);
 
     if (selectedFile) {
+      const tempId = 'temp_' + Date.now();
+      setMessages(prev => [...prev, {
+        _id: tempId, sender: 'user', content: text || filePreview?.name || 'File',
+        messageType: filePreview?.type || 'document', createdAt: new Date().toISOString()
+      }]);
       const form = new FormData();
       form.append('file', selectedFile);
       form.append('type', selectedFile.type.startsWith('image') ? 'image' : selectedFile.type.startsWith('video') ? 'video' : 'document');
       form.append('caption', text);
       form.append('guestId', guestId);
       if (user?._id) form.append('userId', user._id);
-      try {
-        await axios.post(`${API}/api/whatsapp/send-media`, form);
-      } catch {}
       setSelectedFile(null);
       setFilePreview(null);
       setSending(false);
+      axios.post(`${API}/api/whatsapp/send-media`, form).then(() => setMessages(prev => prev.filter(m => m._id !== tempId))).catch(() => setMessages(prev => prev.filter(m => m._id !== tempId)));
       return;
     }
 
@@ -160,18 +163,20 @@ export default function ChatBot() {
         }
         const blob = new Blob(chunks, { type: mediaRecorder.mimeType });
         const file = new File([blob], `voice-${Date.now()}.webm`, { type: mediaRecorder.mimeType });
+        const tempId = 'temp_' + Date.now();
+        setMessages(prev => [...prev, {
+          _id: tempId, sender: 'user', content: '🎤 Voice note', messageType: 'voice', createdAt: new Date().toISOString()
+        }]);
         const form = new FormData();
         form.append('file', file);
         form.append('type', 'voice');
         form.append('caption', '');
         form.append('guestId', guestId);
         if (user?._id) form.append('userId', user._id);
-        try {
-          await axios.post(`${API}/api/whatsapp/send-media`, form);
-        } catch {}
         if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop());
         setIsRecording(false);
         setRecordingDuration(0);
+        axios.post(`${API}/api/whatsapp/send-media`, form).then(() => setMessages(prev => prev.filter(m => m._id !== tempId))).catch(() => setMessages(prev => prev.filter(m => m._id !== tempId)));
       };
       mediaRecorder.start(100);
       setIsRecording(true);
@@ -234,7 +239,7 @@ export default function ChatBot() {
   }
 
   return (
-    <div className="pt-20 md:pt-24 pb-6 md:pb-10 flex flex-col chat-bg">
+    <div className="pt-20 md:pt-24 flex flex-col h-screen chat-bg">
       <div className="rain-layer">
         {Array.from({ length: 12 }).map((_, i) => (
           <div key={`drop-${i}`}>
@@ -280,8 +285,8 @@ export default function ChatBot() {
         )}
       </AnimatePresence>
 
-      <div className="flex flex-col max-w-full mx-auto w-full relative z-[3]">
-        <div className="px-3 md:px-8 py-3 md:py-4 border-b border-glass-border flex items-center justify-between bg-background">
+      <div className="flex flex-col max-w-full mx-auto w-full h-full relative z-[3]">
+        <div className="px-3 md:px-8 py-3 md:py-4 border-b border-glass-border flex items-center justify-between bg-background shrink-0">
           <div className="flex items-center gap-2 md:gap-3">
             <div className="w-9 h-9 md:w-11 md:h-11 rounded-xl gradient-bg flex items-center justify-center font-bold text-base md:text-lg shrink-0">O</div>
             <div className="min-w-0">
@@ -294,7 +299,7 @@ export default function ChatBot() {
           )}
         </div>
 
-        <div ref={messagesContainerRef} className="overflow-y-auto px-3 md:px-8 py-3 md:py-6 space-y-3 md:space-y-4 max-h-[55vh] md:max-h-[60vh] min-h-[300px] md:min-h-[400px]">
+        <div ref={messagesContainerRef} className="overflow-y-auto px-3 md:px-8 py-3 md:py-6 space-y-3 md:space-y-4 flex-1 min-h-0">
             {messages.map((msg) => (
               <motion.div key={msg._id}
                 initial={{ opacity: 0, y: 15, scale: 0.9 }}
@@ -362,7 +367,7 @@ export default function ChatBot() {
           <div ref={messagesEndRef} />
         </div>
 
-        <div className="px-3 md:px-8 py-2 md:py-4 border-t border-glass-border bg-background">
+        <div className="px-3 md:px-8 py-2 md:py-4 border-t border-glass-border bg-background shrink-0">
           <AnimatePresence>
             {filePreview && (
               <motion.div initial={{ opacity: 0, y: 20, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -10, scale: 0.9 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }}

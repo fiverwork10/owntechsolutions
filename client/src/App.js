@@ -92,7 +92,7 @@ function App() {
           </Routes>
         </AnimatePresence>
       </main>
-      {!isAdmin && <Footer />}
+      {!isAdmin && location.pathname !== '/chat' && <Footer />}
     </div>
   );
 }
