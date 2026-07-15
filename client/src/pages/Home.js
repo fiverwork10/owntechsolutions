@@ -48,14 +48,6 @@ function Home() {
   useEffect(() => {
     const isMobile = window.innerWidth < 768;
 
-    const heroTrigger = ScrollTrigger.create({
-      trigger: heroRef.current,
-      start: 'top top',
-      end: isMobile ? '+=50%' : '+=100%',
-      pin: !isMobile,
-      anticipatePin: 1,
-    });
-
     const ctx = gsap.context(() => {
       if (!isMobile) {
         gsap.set('.service-card', { y: 100, opacity: 0 });
@@ -71,7 +63,6 @@ function Home() {
     });
 
     return () => {
-      heroTrigger.kill();
       ctx.revert();
     };
   }, []);
@@ -113,40 +104,33 @@ function Home() {
 
       <section
         ref={heroRef}
-        className="relative min-h-screen flex items-center overflow-hidden pt-16 md:pt-20"
+        className="relative min-h-screen flex items-center justify-center overflow-hidden"
       >
-        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 xl:px-16 py-6 md:py-12">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.02] via-transparent to-primary/[0.04]" />
-            <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/5 rounded-full blur-[100px]" />
-            <div className="absolute -bottom-20 -left-20 w-60 h-60 bg-primary/5 rounded-full blur-[80px]" />
-            <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/50 pointer-events-none" />
-            <div className="w-full max-w-2xl relative z-10">
-              <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease: 'easeOut' }} className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass text-primary-light text-sm mb-4 md:mb-6">
-                <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                Welcome to OwnTechSolutions
-              </motion.div>
-              <motion.h1 initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.15, ease: 'easeOut' }} className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold leading-tight mb-4 md:mb-6">
-                <span style={{ textShadow: '0 0 10px rgba(255,255,255,0.15), 0 0 30px rgba(139,92,246,0.15), 0 0 60px rgba(139,92,246,0.06)' }}>Transforming Ideas Into{' '}</span>
-                <span className="gradient-text" style={{ textShadow: '0 0 15px rgba(139,92,246,0.6), 0 0 50px rgba(139,92,246,0.3), 0 0 100px rgba(139,92,246,0.12)' }}>Powerful Digital</span>
-                <span style={{ textShadow: '0 0 10px rgba(255,255,255,0.15), 0 0 30px rgba(139,92,246,0.15), 0 0 60px rgba(139,92,246,0.06)' }}> Solutions</span>
-              </motion.h1>
-              <motion.p initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.3, ease: 'easeOut' }} className="text-base md:text-lg lg:text-xl text-text-secondary max-w-xl mb-8 md:mb-10 leading-relaxed">
-                MERN Stack Development, Mobile Applications, Enterprise Solutions & UI/UX Design. We build digital products that drive business growth.
-              </motion.p>
-              <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.45, ease: 'easeOut' }} className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-                <Link to="/services" className="btn-primary group text-base md:text-lg text-center">
-                  Get Started <FiArrowRight className="group-hover:translate-x-1 transition-transform" />
-                </Link>
-                <Link to="/projects" className="btn-secondary group text-base md:text-lg text-center">
-                  <FiPlay /> View Portfolio
-                </Link>
-              </motion.div>
-            </div>
-          </div>
-        <div className="absolute bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 z-10 animate-bounce">
-          <div className="w-6 h-10 rounded-full border-2 border-primary/50 flex items-start justify-center p-1">
-            <div className="w-1.5 h-3 rounded-full bg-primary animate-pulse" />
-          </div>
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/10 rounded-full blur-[120px]" />
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-primary/10 rounded-full blur-[120px]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[200px]" />
+        <div className="relative z-10 flex flex-col items-center text-center px-4 sm:px-6 max-w-5xl mx-auto gap-3 md:gap-4">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: 'easeOut' }} className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass text-primary-light text-sm mb-2">
+            <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+            Welcome to OwnTechSolutions
+          </motion.div>
+          <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.15, ease: 'easeOut' }} className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight" style={{ textShadow: '0 0 20px rgba(139,92,246,0.3), 0 0 40px rgba(139,92,246,0.15), 0 0 80px rgba(139,92,246,0.08)' }}>
+            <span>Transforming Ideas Into </span>
+            <span className="gradient-text" style={{ textShadow: '0 0 20px rgba(139,92,246,0.6), 0 0 60px rgba(139,92,246,0.3), 0 0 100px rgba(139,92,246,0.15)' }}>Powerful Digital</span>
+            <span> Solutions</span>
+          </motion.h1>
+          <div className="w-16 h-1 bg-gradient-to-r from-transparent via-primary to-transparent rounded-full opacity-60 my-2" />
+          <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.3, ease: 'easeOut' }} className="text-sm sm:text-base md:text-lg lg:text-xl text-text-secondary max-w-2xl leading-relaxed">
+            MERN Stack Development, Mobile Applications, Enterprise Solutions & UI/UX Design. We build digital products that drive business growth.
+          </motion.p>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.45, ease: 'easeOut' }} className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-2">
+            <Link to="/services" className="btn-primary group text-sm sm:text-base md:text-lg text-center">
+              Get Started <FiArrowRight className="group-hover:translate-x-1 transition-transform" />
+            </Link>
+            <Link to="/projects" className="btn-secondary group text-sm sm:text-base md:text-lg text-center">
+              <FiPlay /> View Portfolio
+            </Link>
+          </motion.div>
         </div>
       </section>
 
