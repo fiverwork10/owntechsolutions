@@ -3,9 +3,6 @@ import { Link } from 'react-router-dom';
 import { FiGithub, FiLinkedin, FiTwitter, FiMail, FiPhone, FiMapPin, FiMessageCircle, FiSend } from 'react-icons/fi';
 import { FaWhatsapp } from 'react-icons/fa';
 import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
-gsap.registerPlugin(ScrollTrigger);
 
 const quickLinks = [
   { path: '/', label: 'Home' },
@@ -33,11 +30,7 @@ const Footer = () => {
         opacity: 0,
         duration: 0.8,
         stagger: 0.1,
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: 'top 90%',
-          toggleActions: 'play none none reverse'
-        }
+        delay: 0.1
       });
     }, sectionRef);
     return () => ctx.revert();
