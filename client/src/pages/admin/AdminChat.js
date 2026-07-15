@@ -54,6 +54,10 @@ export default function AdminChat() {
   };
 
   useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  useEffect(() => {
     const socket = io(SOCKET_URL);
     socketRef.current = socket;
     socket.emit('join_admin');
@@ -67,7 +71,6 @@ export default function AdminChat() {
       });
       if (selectedConv && convId === selectedConv._id) {
         setMessages(prev => prev.some(m => m._id === data._id) ? prev : [...prev, data]);
-        scrollToBottom();
       }
     });
 
@@ -124,7 +127,6 @@ export default function AdminChat() {
       form.append('sender', 'admin');
       try {
         await fetch(`${API_BASE}/api/whatsapp/send-media`, { method: 'POST', body: form });
-        setTimeout(scrollToBottom, 100);
       } catch {}
       setSelectedFile(null);
       setFilePreview(null);
@@ -137,7 +139,6 @@ export default function AdminChat() {
       content: text,
       messageType: 'text'
     });
-    setTimeout(scrollToBottom, 100);
   };
 
   const deleteMessage = (msgId) => {
