@@ -1,13 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-
-const waveKeyframesId = 'wave-keyframes';
-if (!document.getElementById(waveKeyframesId)) {
-  const s = document.createElement('style');
-  s.id = waveKeyframesId;
-  s.textContent = `@keyframes wave-line { 0%, 100% { transform: scaleY(0.3); } 50% { transform: scaleY(1); } }`;
-  document.head.appendChild(s);
-}
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -114,32 +106,15 @@ function Home() {
         ref={heroRef}
         className="relative min-h-screen flex items-center justify-center overflow-hidden pt-24 md:pt-28"
       >
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/10 rounded-full blur-[120px]" />
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-primary/10 rounded-full blur-[120px]" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[200px]" />
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/5 rounded-full blur-[60px]" />
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-primary/5 rounded-full blur-[60px]" />
         <div className="relative z-10 flex flex-col items-center text-center px-6 sm:px-8 lg:px-12 max-w-6xl mx-auto gap-3 md:gap-5">
           <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.1, ease: 'easeOut' }} className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-black leading-none md:leading-tight tracking-tight" style={{ textShadow: '0 0 30px rgba(139,92,246,0.25), 0 0 60px rgba(139,92,246,0.12), 0 0 120px rgba(139,92,246,0.06)' }}>
             Transforming Ideas Into{' '}
             <span className="gradient-text" style={{ textShadow: '0 0 30px rgba(139,92,246,0.6), 0 0 80px rgba(139,92,246,0.3), 0 0 150px rgba(139,92,246,0.15)' }}>Powerful Digital</span>{' '}
             Solutions
           </motion.h1>
-          <div className="relative w-full max-w-[200px] sm:max-w-[280px] md:max-w-[380px] h-8 md:h-12 my-1 md:my-2 overflow-hidden">
-            <div className="absolute inset-0 flex items-end justify-center gap-[3px] md:gap-[4px]">
-              {Array.from({ length: 20 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="w-[3px] md:w-[4px] rounded-full bg-gradient-to-t from-primary/60 via-primary/20 to-transparent will-change-transform"
-                  style={{
-                    height: '100%',
-                    transform: `scaleY(${0.3 + Math.abs(Math.sin(i * 0.5)) * 0.7})`,
-                    animation: `wave-line ${1.5 + (i % 3) * 0.3}s ease-in-out infinite`,
-                    animationDelay: `${i * 0.08}s`,
-                    transformOrigin: 'bottom',
-                  }}
-                />
-              ))}
-            </div>
-          </div>
+          <div className="w-24 h-[2px] bg-gradient-to-r from-transparent via-primary to-transparent rounded-full opacity-60 my-2 md:my-3" />
           <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.25, ease: 'easeOut' }} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full glass text-primary-light text-sm sm:text-base">
             <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
             Welcome to OwnTechSolutions
