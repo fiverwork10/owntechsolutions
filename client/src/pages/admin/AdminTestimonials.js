@@ -15,7 +15,7 @@ export default function AdminTestimonials() {
 
   useEffect(() => {
     const fetch = async () => {
-      try { const res = await axios.get('http://localhost:5000/api/testimonials', { headers: { Authorization: `Bearer ${token}` } }); setTestimonials(res.data); }
+      try { const res = await axios.get(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/testimonials`, { headers: { Authorization: `Bearer ${token}` } }); setTestimonials(res.data); }
       catch (err) { console.error(err); }
       finally { setLoading(false); }
     };
@@ -26,10 +26,10 @@ export default function AdminTestimonials() {
     e.preventDefault();
     try {
       if (editing) {
-        const res = await axios.put(`http://localhost:5000/api/testimonials/${editing}`, form, { headers: { Authorization: `Bearer ${token}` } });
+        const res = await axios.put(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/testimonials/${editing}`, form, { headers: { Authorization: `Bearer ${token}` } });
         setTestimonials(prev => prev.map(t => t._id === editing ? res.data : t));
       } else {
-        const res = await axios.post('http://localhost:5000/api/testimonials', form, { headers: { Authorization: `Bearer ${token}` } });
+        const res = await axios.post(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/testimonials`, form, { headers: { Authorization: `Bearer ${token}` } });
         setTestimonials(prev => [res.data, ...prev]);
       }
       setShowForm(false); setEditing(null); setForm({ clientName: '', company: '', position: '', review: '', rating: 5 });
@@ -38,7 +38,7 @@ export default function AdminTestimonials() {
 
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this testimonial?')) return;
-    try { await axios.delete(`http://localhost:5000/api/testimonials/${id}`, { headers: { Authorization: `Bearer ${token}` } }); setTestimonials(prev => prev.filter(t => t._id !== id)); }
+    try { await axios.delete(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/testimonials/${id}`, { headers: { Authorization: `Bearer ${token}` } }); setTestimonials(prev => prev.filter(t => t._id !== id)); }
     catch (err) { console.error(err); }
   };
 

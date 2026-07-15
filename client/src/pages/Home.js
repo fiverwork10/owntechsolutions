@@ -100,7 +100,7 @@ function Home() {
 
   const onSubmit = async (data) => {
     try {
-      await axios.post('http://localhost:5000/api/contacts', data);
+      await axios.post(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/contacts`, data);
       reset();
       setContactSuccess('Message sent successfully! We\'ll get back to you soon.');
       setTimeout(() => setContactSuccess(''), 5000);

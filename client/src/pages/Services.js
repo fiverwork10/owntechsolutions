@@ -144,7 +144,7 @@ export default function Services() {
   const [selectedService, setSelectedService] = useState(null);
 
   const fetchServices = () => {
-    axios.get('http://localhost:5000/api/services').then(res => {
+    axios.get(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/services`).then(res => {
       if (res.data.services?.length) setServices(res.data.services);
     }).catch(() => {});
   };

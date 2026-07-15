@@ -15,7 +15,7 @@ export default function AdminMessages() {
   useEffect(() => {
     const fetchConversations = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/messages/conversations', { headers: { Authorization: `Bearer ${token}` } });
+        const res = await axios.get(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/messages/conversations`, { headers: { Authorization: `Bearer ${token}` } });
         setConversations(res.data);
       } catch (err) { console.error(err); }
     };
@@ -26,9 +26,9 @@ export default function AdminMessages() {
     if (!selected) return;
     const fetchMessages = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/api/messages?conversationId=${selected}`, { headers: { Authorization: `Bearer ${token}` } });
+        const res = await axios.get(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/messages?conversationId=${selected}`, { headers: { Authorization: `Bearer ${token}` } });
         setMessages(res.data.messages || []);
-        await axios.put('http://localhost:5000/api/messages/read', { conversationId: selected }, { headers: { Authorization: `Bearer ${token}` } });
+        await axios.put(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/messages/read`, { conversationId: selected }, { headers: { Authorization: `Bearer ${token}` } });
       } catch (err) { console.error(err); }
     };
     fetchMessages();
@@ -37,7 +37,7 @@ export default function AdminMessages() {
   const sendReply = async () => {
     if (!reply.trim() || !selected) return;
     try {
-      await axios.post('http://localhost:5000/api/messages', { conversationId: selected, content: reply }, { headers: { Authorization: `Bearer ${token}` } });
+      await axios.post(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/messages`, { conversationId: selected, content: reply }, { headers: { Authorization: `Bearer ${token}` } });
       setMessages(prev => [...prev, { _id: Date.now(), sender: 'admin', content: reply, createdAt: new Date().toISOString() }]);
       setReply('');
     } catch (err) { console.error(err); }

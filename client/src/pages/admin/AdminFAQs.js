@@ -16,7 +16,7 @@ export default function AdminFAQs() {
   const [form, setForm] = useState({ question: '', answer: '', category: 'general', tags: '' });
 
   const fetchFAQs = async () => {
-    try { const res = await axios.get('http://localhost:5000/api/faqs', { headers: { Authorization: `Bearer ${token}` } }); setFaqs(res.data); }
+    try { const res = await axios.get(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/faqs`, { headers: { Authorization: `Bearer ${token}` } }); setFaqs(res.data); }
     catch (err) { console.error(err); }
     finally { setLoading(false); }
   };
@@ -28,10 +28,10 @@ export default function AdminFAQs() {
     const data = { ...form, tags: form.tags.split(',').map(t => t.trim()).filter(Boolean) };
     try {
       if (editing) {
-        const res = await axios.put(`http://localhost:5000/api/faqs/${editing}`, data, { headers: { Authorization: `Bearer ${token}` } });
+        const res = await axios.put(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/faqs/${editing}`, data, { headers: { Authorization: `Bearer ${token}` } });
         setFaqs(prev => prev.map(f => f._id === editing ? res.data : f));
       } else {
-        const res = await axios.post('http://localhost:5000/api/faqs', data, { headers: { Authorization: `Bearer ${token}` } });
+        const res = await axios.post(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/faqs`, data, { headers: { Authorization: `Bearer ${token}` } });
         setFaqs(prev => [res.data, ...prev]);
       }
       setShowForm(false); setEditing(null); setForm({ question: '', answer: '', category: 'general', tags: '' });
@@ -40,7 +40,7 @@ export default function AdminFAQs() {
 
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this FAQ?')) return;
-    try { await axios.delete(`http://localhost:5000/api/faqs/${id}`, { headers: { Authorization: `Bearer ${token}` } }); setFaqs(prev => prev.filter(f => f._id !== id)); }
+    try { await axios.delete(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/faqs/${id}`, { headers: { Authorization: `Bearer ${token}` } }); setFaqs(prev => prev.filter(f => f._id !== id)); }
     catch (err) { console.error(err); }
   };
 

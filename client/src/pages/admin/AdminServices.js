@@ -30,7 +30,7 @@ export default function AdminServices() {
   const [form, setForm] = useState({ title: '', price: '', description: '', features: '', technologies: '', icon: 'FiCode', color: '#8B5CF6', isActive: true, order: 0 });
 
   const fetchServices = async () => {
-    try { const res = await axios.get('http://localhost:5000/api/services', { headers: { Authorization: `Bearer ${token}` } }); setServices(res.data.services); }
+    try { const res = await axios.get(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/services`, { headers: { Authorization: `Bearer ${token}` } }); setServices(res.data.services); }
     catch (err) { console.error(err); }
     finally { setLoading(false); }
   };
@@ -44,10 +44,10 @@ export default function AdminServices() {
     const data = { ...form, features: form.features.split('\n').map(s => s.trim()).filter(Boolean), technologies: form.technologies.split('\n').map(s => s.trim()).filter(Boolean) };
     try {
       if (editing) {
-        const res = await axios.put(`http://localhost:5000/api/services/${editing}`, data, { headers: { Authorization: `Bearer ${token}` } });
+        const res = await axios.put(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/services/${editing}`, data, { headers: { Authorization: `Bearer ${token}` } });
         setServices(prev => prev.map(s => s._id === editing ? res.data : s));
       } else {
-        const res = await axios.post('http://localhost:5000/api/services', data, { headers: { Authorization: `Bearer ${token}` } });
+        const res = await axios.post(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/services`, data, { headers: { Authorization: `Bearer ${token}` } });
         setServices(prev => [res.data, ...prev]);
       }
       setShowForm(false); setEditing(null); resetForm();
@@ -56,7 +56,7 @@ export default function AdminServices() {
 
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this service?')) return;
-    try { await axios.delete(`http://localhost:5000/api/services/${id}`, { headers: { Authorization: `Bearer ${token}` } }); setServices(prev => prev.filter(s => s._id !== id)); }
+    try { await axios.delete(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/services/${id}`, { headers: { Authorization: `Bearer ${token}` } }); setServices(prev => prev.filter(s => s._id !== id)); }
     catch (err) { console.error(err); }
   };
 
