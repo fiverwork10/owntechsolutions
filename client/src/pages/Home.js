@@ -1,13 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 
 const waveKeyframesId = 'wave-keyframes';
 if (!document.getElementById(waveKeyframesId)) {
   const s = document.createElement('style');
   s.id = waveKeyframesId;
-  s.textContent = `@keyframes wave-line { 0%, 100% { transform: scaleY(0.3); opacity: 0.3; } 50% { transform: scaleY(1); opacity: 1; } }`;
+  s.textContent = `@keyframes wave-line { 0%, 100% { transform: scaleY(0.3); } 50% { transform: scaleY(1); } }`;
   document.head.appendChild(s);
 }
-import { Link } from 'react-router-dom';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -123,16 +123,18 @@ function Home() {
             <span className="gradient-text" style={{ textShadow: '0 0 30px rgba(139,92,246,0.6), 0 0 80px rgba(139,92,246,0.3), 0 0 150px rgba(139,92,246,0.15)' }}>Powerful Digital</span>{' '}
             Solutions
           </motion.h1>
-          <div className="relative w-full max-w-[250px] sm:max-w-[350px] md:max-w-[450px] h-6 md:h-10 my-1 md:my-2 overflow-hidden">
-            <div className="absolute inset-0 flex items-center justify-center gap-[2px] md:gap-[3px]">
-              {Array.from({ length: 50 }).map((_, i) => (
+          <div className="relative w-full max-w-[200px] sm:max-w-[280px] md:max-w-[380px] h-8 md:h-12 my-1 md:my-2 overflow-hidden">
+            <div className="absolute inset-0 flex items-end justify-center gap-[3px] md:gap-[4px]">
+              {Array.from({ length: 20 }).map((_, i) => (
                 <div
                   key={i}
-                  className="w-[2px] md:w-[3px] rounded-full bg-gradient-to-t from-primary/50 via-primary/20 to-transparent origin-bottom"
+                  className="w-[3px] md:w-[4px] rounded-full bg-gradient-to-t from-primary/60 via-primary/20 to-transparent will-change-transform"
                   style={{
-                    height: `${35 + Math.abs(Math.sin(i * 0.4)) * 65}%`,
-                    animation: `wave-line ${1.8 + Math.sin(i * 0.3) * 0.5}s ease-in-out infinite`,
-                    animationDelay: `${i * 0.04}s`,
+                    height: '100%',
+                    transform: `scaleY(${0.3 + Math.abs(Math.sin(i * 0.5)) * 0.7})`,
+                    animation: `wave-line ${1.5 + (i % 3) * 0.3}s ease-in-out infinite`,
+                    animationDelay: `${i * 0.08}s`,
+                    transformOrigin: 'bottom',
                   }}
                 />
               ))}
