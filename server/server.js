@@ -334,6 +334,14 @@ app.delete('/api/chat/conversation/:id', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+app.get('/', (req, res) => {
+  res.json({ message: 'OwnTechSolutions API is running', status: 'ok', version: '1.0.0' });
+});
+
+app.get('/api', (req, res) => {
+  res.json({ message: 'OwnTechSolutions API', status: 'ok', version: '1.0.0' });
+});
+
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
