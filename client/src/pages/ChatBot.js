@@ -304,18 +304,23 @@ export default function ChatBot() {
       </AnimatePresence>
 
       <div className="flex flex-col max-w-full mx-auto w-full h-full relative z-[3]">
-        <div className="px-3 md:px-8 py-3 md:py-4 border-b border-glass-border flex items-center justify-between bg-background shrink-0">
+        <div className="hidden md:flex px-3 md:px-8 py-3 md:py-4 border-b border-glass-border items-center justify-between bg-background shrink-0">
           <div className="flex items-center gap-2 md:gap-3">
             <div className="w-9 h-9 md:w-11 md:h-11 rounded-xl gradient-bg flex items-center justify-center font-bold text-base md:text-lg shrink-0">O</div>
             <div className="min-w-0">
               <p className="text-sm md:text-base font-semibold truncate">OwnTechSolutions Support</p>
-              <p className="text-xs text-white flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />Online</p>
+              <p className="hidden md:flex text-xs text-white items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />Online</p>
             </div>
           </div>
           {messages.length > 1 && (
             <button onClick={deleteConversation} className="text-xs text-white hover:text-white/70 transition-colors flex items-center gap-1 py-1 px-2 -mr-2 rounded-lg active:bg-white/10"><FiTrash2 size={12} />Clear chat</button>
           )}
         </div>
+        {messages.length > 1 && (
+          <div className="md:hidden flex justify-end px-3 pt-2 pb-1">
+            <button onClick={deleteConversation} className="flex items-center gap-1.5 text-xs text-white/60 hover:text-white/90 transition-colors py-1.5 px-3 rounded-lg glass active:scale-95"><FiTrash2 size={13} />Delete all</button>
+          </div>
+        )}
 
         <div ref={messagesContainerRef} data-lenis-prevent className="overflow-y-auto px-3 md:px-8 py-3 md:py-6 space-y-3 md:space-y-4 flex-1 min-h-0 overscroll-contain">
             {messages.map((msg) => (
