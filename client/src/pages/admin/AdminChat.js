@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { io } from 'socket.io-client';
-import { FiSend, FiPaperclip, FiTrash2, FiX, FiDownload, FiMaximize2, FiMessageCircle, FiUser, FiCpu, FiClock, FiCheck, FiChevronLeft, FiImage, FiVideo, FiFile, FiMic, FiSearch } from 'react-icons/fi';
+import { FiSend, FiPaperclip, FiTrash2, FiX, FiDownload, FiMaximize2, FiMessageCircle, FiUser, FiCpu, FiClock, FiCheck, FiChevronLeft, FiImage, FiVideo, FiFile, FiMic, FiSearch, FiSmile } from 'react-icons/fi';
 import { FaWhatsapp } from 'react-icons/fa';
 import { useQuery } from '@tanstack/react-query';
 import AdminLayout from '../../components/AdminLayout';
@@ -25,6 +25,7 @@ export default function AdminChat() {
   const [isRecording, setIsRecording] = useState(false);
   const [recordingDuration, setRecordingDuration] = useState(0);
   const [sendingMedia, setSendingMedia] = useState(false);
+  const [showEmoji, setShowEmoji] = useState(false);
   const typingTimeoutRef = useRef(null);
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -215,6 +216,7 @@ export default function AdminChat() {
     const file = e.target.files?.[0];
     if (!file) return;
     setShowUploadMenu(false);
+    setShowEmoji(false);
     setSelectedFile(file);
     if (file.type.startsWith('image/')) {
       const thumb = await createThumbnail(file);
@@ -297,6 +299,7 @@ export default function AdminChat() {
   let recordingLock = false;
   const handleMicClick = () => {
     if (recordingLock) return;
+    setShowEmoji(false);
     if (isRecording) { recordingLock = true; stopRecording(); setTimeout(() => { recordingLock = false; }, 500); return; }
     startRecording();
   };
@@ -325,6 +328,7 @@ export default function AdminChat() {
   const formatDate = (d) => {
     try { return new Date(d).toLocaleDateString([], { month: 'short', day: 'numeric' }); } catch { return ''; }
   };
+  const emojis = ['😀', '😊', '👍', '🎉', '🚀', '💻', '📱', '✨', '💡', '⭐', '❤️', '🔥', '✅', '🎯', '💪', '🤝', '📞', '✉️', '📎', '🖼️', '🎬', '📄'];
 
   return (
     <AdminLayout title="Live Chat">
@@ -462,7 +466,7 @@ export default function AdminChat() {
                 <button onClick={deleteConversation} className="w-8 h-8 md:w-9 md:h-9 rounded-lg glass flex items-center justify-center text-red-400 hover:bg-red-500/20 transition-all shrink-0" title="Delete conversation"><FiTrash2 size={13} /></button>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-3 md:p-4 space-y-2 md:space-y-3">
+              <div data-lenis-prevent className="flex-1 overflow-y-auto p-3 md:p-4 space-y-2 md:space-y-3 overscroll-contain">
                 <AnimatePresence>
                   {messages.map(msg => (
                     <motion.div key={msg._id} initial={{ opacity: 0, y: 15, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.25, type: 'spring', stiffness: 200, damping: 22 }}
@@ -557,43 +561,68 @@ export default function AdminChat() {
                     </motion.div>
                   )}
                 </AnimatePresence>
-                <div className="flex items-center gap-2 md:gap-3 bg-background/60 backdrop-blur-xl border border-primary/20 rounded-2xl md:rounded-2xl p-2 md:p-3 shadow-lg shadow-black/10 shadow-[0_0_18px_rgba(139,92,246,0.15)] focus-within:border-primary/50 focus-within:shadow-[0_0_30px_rgba(139,92,246,0.25)] transition-all duration-300">
-                  <div className="relative" ref={uploadMenuRef}>
-                    <input ref={fileInputRef} type="file" onChange={handleFileSelect} className="hidden" />
-                    <button onClick={() => setShowUploadMenu(!showUploadMenu)} className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-gradient-to-br from-primary/25 to-primary/10 border border-primary/25 flex items-center justify-center text-primary hover:bg-primary/30 hover:border-primary/40 hover:shadow-[0_0_12px_rgba(139,92,246,0.25)] transition-all shrink-0"><FiPaperclip size={17} /></button>
-                    <AnimatePresence>
-                      {showUploadMenu && (
-                        <motion.div initial={{ opacity: 0, scale: 0.85, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.85, y: 10 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-                          className="absolute bottom-full left-0 mb-2 p-1.5 rounded-2xl glass border border-glass-border shadow-xl shadow-primary/10 min-w-[200px]"
+                <AnimatePresence>
+                  {showEmoji && (
+                    <motion.div initial={{ opacity: 0, y: 15, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -10, scale: 0.95 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                      className="flex flex-wrap gap-1.5 md:gap-2 mb-2 md:mb-3 p-2 md:p-3 rounded-xl glass max-h-24 md:max-h-32 overflow-y-auto shadow-lg shadow-primary/10 border border-primary/10"
+                    >
+                      {emojis.map((emoji, i) => (
+                        <motion.button key={i} whileHover={{ scale: 1.2 }} whileTap={{ scale: 0.9 }} onClick={() => setInput(prev => prev + emoji)} className="text-lg md:text-xl w-8 h-8 md:w-9 md:h-9 flex items-center justify-center rounded-lg active:bg-white/10">{emoji}</motion.button>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+                <div className="max-w-3xl mx-auto w-full relative">
+                  <div className="absolute -inset-6 bg-primary/30 rounded-[2rem] blur-3xl opacity-80 pointer-events-none" />
+                  <div className="relative flex items-center bg-background/80 backdrop-blur-xl border border-primary/40 rounded-2xl md:rounded-full px-2 md:px-4 py-2.5 md:py-3.5 shadow-[0_0_24px_rgba(139,92,246,0.15)] focus-within:border-primary/60 focus-within:shadow-[0_0_40px_rgba(139,92,246,0.3)] transition-all duration-300">
+                    <div className="flex items-center gap-0.5">
+                      <div className="relative" ref={uploadMenuRef}>
+                        <input ref={fileInputRef} type="file" onChange={handleFileSelect} className="hidden" />
+                        <motion.button onClick={() => { setShowUploadMenu(!showUploadMenu); setShowEmoji(false); }} whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+                          className="w-8 h-8 md:w-9 md:h-9 rounded-xl md:rounded-full bg-gradient-to-br from-purple-500/30 to-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400 hover:bg-purple-500/40 hover:border-purple-500/50 hover:shadow-[0_0_14px_rgba(168,85,247,0.3)] transition-all shrink-0"
                         >
-                          <button onClick={() => triggerFilePick('image/*')} className="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-primary/10 transition-all group">
-                            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-500/30 to-purple-500/10 border border-purple-500/25 flex items-center justify-center group-hover:shadow-[0_0_15px_rgba(139,92,246,0.35)] transition-shadow"><FiImage size={16} className="text-purple-400" /></div>
-                            <div className="text-left"><p className="text-sm font-semibold text-white">Image</p><p className="text-[10px] text-white/40">Upload photos</p></div>
-                          </button>
-                          <button onClick={() => triggerFilePick('video/*')} className="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-primary/10 transition-all group">
-                            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500/30 to-blue-500/10 border border-blue-500/25 flex items-center justify-center group-hover:shadow-[0_0_15px_rgba(59,130,246,0.35)] transition-shadow"><FiVideo size={16} className="text-blue-400" /></div>
-                            <div className="text-left"><p className="text-sm font-semibold text-white">Video</p><p className="text-[10px] text-white/40">Upload videos</p></div>
-                          </button>
-                          <button onClick={() => triggerFilePick('.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip')} className="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-primary/10 transition-all group">
-                            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500/30 to-amber-500/10 border border-amber-500/25 flex items-center justify-center group-hover:shadow-[0_0_15px_rgba(245,158,11,0.35)] transition-shadow"><FiFile size={16} className="text-amber-400" /></div>
-                            <div className="text-left"><p className="text-sm font-semibold text-white">Document</p><p className="text-[10px] text-white/40">Upload files</p></div>
-                          </button>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                          <FiPaperclip size={15} />
+                        </motion.button>
+                        <AnimatePresence>
+                          {showUploadMenu && (
+                            <motion.div initial={{ opacity: 0, scale: 0.85, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.85, y: 10 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                              className="absolute bottom-full left-0 mb-2 p-1.5 rounded-2xl bg-[#0f0f1a] border border-primary/25 shadow-xl shadow-black/50 min-w-[190px]"
+                            >
+                              <button onClick={() => triggerFilePick('image/*')} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-primary/10 transition-all group">
+                                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-500/30 to-purple-500/10 border border-purple-500/25 flex items-center justify-center group-hover:shadow-[0_0_15px_rgba(139,92,246,0.35)] transition-shadow"><FiImage size={16} className="text-purple-400" /></div>
+                                <div className="text-left"><p className="text-sm font-semibold text-white">Image</p><p className="text-[10px] text-white/40">Upload photos</p></div>
+                              </button>
+                              <button onClick={() => triggerFilePick('video/*')} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-primary/10 transition-all group">
+                                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500/30 to-blue-500/10 border border-blue-500/25 flex items-center justify-center group-hover:shadow-[0_0_15px_rgba(59,130,246,0.35)] transition-shadow"><FiVideo size={16} className="text-blue-400" /></div>
+                                <div className="text-left"><p className="text-sm font-semibold text-white">Video</p><p className="text-[10px] text-white/40">Upload videos</p></div>
+                              </button>
+                              <button onClick={() => triggerFilePick('.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip')} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-primary/10 transition-all group">
+                                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500/30 to-amber-500/10 border border-amber-500/25 flex items-center justify-center group-hover:shadow-[0_0_15px_rgba(245,158,11,0.35)] transition-shadow"><FiFile size={16} className="text-amber-400" /></div>
+                                <div className="text-left"><p className="text-sm font-semibold text-white">Document</p><p className="text-[10px] text-white/40">Upload files</p></div>
+                              </button>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                      <motion.button onClick={() => { setShowEmoji(!showEmoji); setShowUploadMenu(false); }} whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+                        className="w-8 h-8 md:w-9 md:h-9 rounded-xl md:rounded-full bg-gradient-to-br from-yellow-500/30 to-yellow-500/10 border border-yellow-500/30 flex items-center justify-center text-yellow-400 hover:bg-yellow-500/40 hover:border-yellow-500/50 hover:shadow-[0_0_14px_rgba(234,179,8,0.3)] transition-all shrink-0"
+                      >
+                        <FiSmile size={15} />
+                      </motion.button>
+                    </div>
+                    <textarea value={input} onChange={e => { setInput(e.target.value); emitTyping(); }} onKeyPress={handleKeyPress} placeholder="Type a reply..." className="flex-1 px-1 py-2.5 md:py-3 bg-transparent text-white placeholder-white/30 outline-none resize-none text-sm md:text-base leading-relaxed min-w-0 max-h-32" rows={1} onInput={e => { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 128) + 'px'; }} />
+                    <div className="flex items-center gap-1">
+                      <motion.button onClick={handleMicClick} whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+                        className={`w-8 h-8 md:w-9 md:h-9 rounded-xl md:rounded-full flex items-center justify-center transition-all shrink-0 ${
+                          isRecording ? 'bg-red-500/20 border border-red-500/40 text-red-400 shadow-[0_0_12px_rgba(239,68,68,0.3)]' : 'bg-gradient-to-br from-rose-500/30 to-rose-500/10 border border-rose-500/30 text-rose-400 hover:bg-rose-500/40 hover:border-rose-500/50 hover:shadow-[0_0_14px_rgba(244,63,94,0.3)]'
+                        }`}
+                      >
+                        <FiMic size={15} />
+                      </motion.button>
+                      <motion.button onClick={sendReply} disabled={(!input.trim() && !selectedFile) || sendingMedia} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.9 }}
+                        className="w-9 h-9 md:w-10 md:h-10 rounded-xl md:rounded-full gradient-bg flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-all shrink-0 shadow-lg shadow-primary/25 hover:shadow-[0_0_20px_rgba(139,92,246,0.5)]">{sendingMedia ? <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" /> : <FiSend size={15} />}</motion.button>
+                    </div>
                   </div>
-                  <motion.button onClick={handleMicClick} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.9 }}
-                    className={`w-9 h-9 md:w-10 md:h-10 rounded-xl flex items-center justify-center transition-all shrink-0 ${
-                      isRecording ? 'bg-red-500/20 border border-red-500/40 text-red-400 shadow-[0_0_15px_rgba(239,68,68,0.3)]' : 'bg-gradient-to-br from-primary/25 to-primary/10 border border-primary/25 text-primary hover:bg-primary/30 hover:border-primary/40 hover:shadow-[0_0_12px_rgba(139,92,246,0.25)]'
-                    }`}
-                  >
-                    <FiMic size={17} />
-                  </motion.button>
-                  <div className="flex-1 relative">
-                    <textarea value={input} onChange={e => { setInput(e.target.value); emitTyping(); }} onKeyPress={handleKeyPress} placeholder="Type a reply..." className="w-full px-2 md:px-3 py-2.5 md:py-3 bg-transparent text-white placeholder-white/30 outline-none resize-none text-sm leading-relaxed max-h-32" rows={1} onInput={e => { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 128) + 'px'; }} />
-                  </div>
-                    <motion.button onClick={sendReply} disabled={(!input.trim() && !selectedFile) || sendingMedia} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.9 }}
-                    className="w-9 h-9 md:w-10 md:h-10 rounded-xl gradient-bg flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-all shrink-0 shadow-lg shadow-primary/25 hover:shadow-[0_0_20px_rgba(139,92,246,0.4)]">{sendingMedia ? <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" /> : <FiSend size={16} />}</motion.button>
                 </div>
               </div>
             </>

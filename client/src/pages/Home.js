@@ -85,6 +85,74 @@ function Home() {
       >
           <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/5 rounded-full blur-[60px]" />
           <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-primary/5 rounded-full blur-[60px]" />
+
+          <div className="absolute left-0 top-0 h-full w-[22%] overflow-hidden pointer-events-none z-0" aria-hidden="true" style={{ maskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)' }}>
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/25 via-primary/15 to-transparent blur-3xl opacity-70" />
+            <svg className="relative w-full h-full opacity-40 md:opacity-60" viewBox="0 0 240 900" preserveAspectRatio="none" style={{ filter: 'drop-shadow(0 0 10px rgba(139,92,246,0.6))' }}>
+              <defs>
+                <linearGradient id="waveGradL" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="rgba(139,92,246,0)" />
+                  <stop offset="35%" stopColor="rgba(139,92,246,0.6)" />
+                  <stop offset="65%" stopColor="rgba(139,92,246,0.4)" />
+                  <stop offset="100%" stopColor="rgba(139,92,246,0)" />
+                </linearGradient>
+                <linearGradient id="waveGrad2L" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="rgba(167,139,250,0)" />
+                  <stop offset="40%" stopColor="rgba(167,139,250,0.4)" />
+                  <stop offset="60%" stopColor="rgba(167,139,250,0.3)" />
+                  <stop offset="100%" stopColor="rgba(167,139,250,0)" />
+                </linearGradient>
+              </defs>
+              {[
+                { left: 8, path: 'M0,0 Q25,80 -20,180 T5,320 T-15,480 T10,620 T-6,800', delay: 0, dur: 12, grad: 'url(#waveGradL)' },
+                { left: 48, path: 'M0,0 Q-30,90 25,190 T-6,350 T18,510 T-12,670 T8,850', delay: 0.8, dur: 14, grad: 'url(#waveGrad2L)' },
+                { left: 88, path: 'M0,0 Q20,110 -18,220 T6,360 T-14,500 T12,640 T-5,800', delay: 1.6, dur: 11, grad: 'url(#waveGradL)' },
+                { left: 128, path: 'M0,0 Q-25,95 28,195 T-8,380 T20,560 T-14,740 T10,900', delay: 2.4, dur: 13, grad: 'url(#waveGrad2L)' },
+                { left: 168, path: 'M0,0 Q22,85 -18,185 T4,330 T-14,490 T10,630 T-6,800', delay: 3.2, dur: 11.5, grad: 'url(#waveGradL)' },
+                { left: 208, path: 'M0,0 Q-28,100 22,200 T-8,360 T16,520 T-10,680 T6,850', delay: 4.0, dur: 12.5, grad: 'url(#waveGrad2L)' },
+              ].map((w, i) => (
+                <g key={i} transform={`translate(${w.left}, 0)`}>
+                  <g className="wave-line" style={{ '--wave-delay': `${w.delay}s`, '--wave-dur': `${w.dur}s` }}>
+                    <path d={w.path} stroke={w.grad} strokeWidth="2" fill="none" strokeLinecap="round" />
+                  </g>
+                </g>
+              ))}
+            </svg>
+          </div>
+          <div className="absolute right-0 top-0 h-full w-[22%] overflow-hidden pointer-events-none z-0" aria-hidden="true" style={{ maskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)' }}>
+            <div className="absolute inset-0 bg-gradient-to-l from-primary/25 via-primary/15 to-transparent blur-3xl opacity-70" />
+            <svg className="relative w-full h-full opacity-40 md:opacity-60" viewBox="0 0 240 900" preserveAspectRatio="none" style={{ filter: 'drop-shadow(0 0 10px rgba(139,92,246,0.6))' }}>
+              <defs>
+                <linearGradient id="waveGradR" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="rgba(139,92,246,0)" />
+                  <stop offset="35%" stopColor="rgba(139,92,246,0.6)" />
+                  <stop offset="65%" stopColor="rgba(139,92,246,0.4)" />
+                  <stop offset="100%" stopColor="rgba(139,92,246,0)" />
+                </linearGradient>
+                <linearGradient id="waveGrad2R" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="rgba(167,139,250,0)" />
+                  <stop offset="40%" stopColor="rgba(167,139,250,0.4)" />
+                  <stop offset="60%" stopColor="rgba(167,139,250,0.3)" />
+                  <stop offset="100%" stopColor="rgba(167,139,250,0)" />
+                </linearGradient>
+              </defs>
+              {[
+                { left: 8, path: 'M0,0 Q25,80 -20,180 T5,320 T-15,480 T10,620 T-6,800', delay: 0.6, dur: 12.5, grad: 'url(#waveGradR)' },
+                { left: 48, path: 'M0,0 Q-30,90 25,190 T-6,350 T18,510 T-12,670 T8,850', delay: 1.4, dur: 10.5, grad: 'url(#waveGrad2R)' },
+                { left: 88, path: 'M0,0 Q20,110 -18,220 T6,360 T-14,500 T12,640 T-5,800', delay: 2.2, dur: 13.5, grad: 'url(#waveGradR)' },
+                { left: 128, path: 'M0,0 Q-25,95 28,195 T-8,380 T20,560 T-14,740 T10,900', delay: 3.0, dur: 11, grad: 'url(#waveGrad2R)' },
+                { left: 168, path: 'M0,0 Q22,85 -18,185 T4,330 T-14,490 T10,630 T-6,800', delay: 3.8, dur: 15, grad: 'url(#waveGradR)' },
+                { left: 208, path: 'M0,0 Q-28,100 22,200 T-8,360 T16,520 T-10,680 T6,850', delay: 4.6, dur: 12, grad: 'url(#waveGrad2R)' },
+              ].map((w, i) => (
+                <g key={i} transform={`translate(${w.left}, 0)`}>
+                  <g className="wave-line" style={{ '--wave-delay': `${w.delay}s`, '--wave-dur': `${w.dur}s` }}>
+                    <path d={w.path} stroke={w.grad} strokeWidth="2" fill="none" strokeLinecap="round" />
+                  </g>
+                </g>
+              ))}
+            </svg>
+          </div>
+
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: 'easeOut' }} style={{ willChange: 'transform, opacity' }} className="relative z-10 flex flex-col items-center text-center px-6 sm:px-8 lg:px-12 max-w-6xl mx-auto gap-3 md:gap-5">
           <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-black leading-none md:leading-tight tracking-tight break-words" style={{ textShadow: '0 0 30px rgba(139,92,246,0.25), 0 0 60px rgba(139,92,246,0.12), 0 0 120px rgba(139,92,246,0.06)' }}>
             Transforming Ideas Into{' '}
@@ -96,7 +164,7 @@ function Home() {
             <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
             Welcome to OwnTechSolutions
           </div>
-          <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-text-secondary max-w-4xl leading-relaxed font-light">
+          <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-gray-300 max-w-4xl leading-relaxed font-light">
             MERN Stack Development, Mobile Applications, Enterprise Solutions & UI/UX Design. We build digital products that drive business growth.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-5 mt-2 md:mt-4">
@@ -115,7 +183,7 @@ function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12 md:mb-20">
             <h2 className="section-title">What We Offer</h2>
-            <p className="section-subtitle">Comprehensive digital solutions tailored to elevate your business in the modern technology landscape</p>
+            <p className="section-subtitle !text-gray-300">Comprehensive digital solutions tailored to elevate your business in the modern technology landscape</p>
           </motion.div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {services.map((service, i) => (
@@ -129,7 +197,7 @@ function Home() {
                   <span className="text-5xl mb-4 block">{service.icon}</span>
                   <span className="text-6xl font-black text-primary/10 absolute top-4 right-4 select-none">{service.number}</span>
                   <h3 className="text-2xl font-bold mb-3 group-hover:text-primary transition-colors">{service.title}</h3>
-                  <p className="text-text-secondary leading-relaxed">{service.desc}</p>
+                  <p className="text-gray-300 leading-relaxed">{service.desc}</p>
                   <div className="mt-6 flex items-center gap-2 text-primary text-sm font-medium opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
                     Learn More <FiArrowRight />
                   </div>
@@ -153,7 +221,7 @@ function Home() {
                 <div className="text-4xl md:text-5xl font-bold gradient-text mb-2">
                   <CountUp to={stat.number} />{stat.suffix}
                 </div>
-                <p className="text-text-secondary">{stat.label}</p>
+                <p className="text-gray-300">{stat.label}</p>
               </motion.div>
             ))}
           </div>
@@ -166,7 +234,7 @@ function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12 md:mb-16">
             <h2 className="section-title">What Our Clients Say</h2>
-            <p className="section-subtitle">Trusted by businesses across Pakistan to deliver exceptional digital solutions</p>
+            <p className="section-subtitle !text-gray-300">Trusted by businesses across Pakistan to deliver exceptional digital solutions</p>
           </motion.div>
           <Swiper
             modules={[Autoplay, Pagination]}
@@ -181,7 +249,7 @@ function Home() {
               <SwiperSlide key={i}>
                 <div className="card h-full group hover:border-primary/30 transition-all duration-500">
                   <FaQuoteLeft className="text-3xl text-primary/20 mb-4" />
-                  <p className="text-text-secondary mb-6 leading-relaxed line-clamp-4">"{t.review}"</p>
+                  <p className="text-gray-300 mb-6 leading-relaxed line-clamp-4">"{t.review}"</p>
                   <div className="flex gap-1 mb-4">
                     {Array.from({ length: 5 }).map((_, j) => (
                       <FaStar key={j} className={j < t.rating ? 'text-yellow-500' : 'text-gray-600'} size={14} />
@@ -191,7 +259,7 @@ function Home() {
                     <div className="w-12 h-12 rounded-full gradient-bg flex items-center justify-center font-bold text-lg">{t.name[0]}</div>
                     <div>
                       <p className="font-semibold text-sm">{t.name}</p>
-                      <p className="text-text-muted text-xs">{t.company}</p>
+                      <p className="text-gray-400 text-xs">{t.company}</p>
                     </div>
                   </div>
                 </div>
@@ -208,7 +276,7 @@ function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12 md:mb-16">
             <h2 className="section-title">Get In Touch</h2>
-            <p className="section-subtitle">Have a project in mind? Let's discuss how we can help you achieve your goals</p>
+            <p className="section-subtitle !text-gray-300">Have a project in mind? Let's discuss how we can help you achieve your goals</p>
           </motion.div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-start">
             <motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
@@ -224,7 +292,7 @@ function Home() {
                       <item.icon size={20} />
                     </div>
                     <div>
-                      <p className="text-sm text-text-muted">{item.label}</p>
+                      <p className="text-sm text-gray-400">{item.label}</p>
                       <p className="font-medium group-hover:text-primary transition-colors">{item.value}</p>
                     </div>
                   </a>
@@ -279,14 +347,14 @@ function Home() {
               className="glass-strong rounded-3xl p-6 md:p-10 max-w-lg w-full relative mx-4 border border-primary/10"
               onClick={(e) => e.stopPropagation()}
             >
-              <button type="button" onClick={() => setSelectedService(null)} className="absolute -top-3 -right-3 md:-top-4 md:-right-4 w-12 h-12 rounded-full glass flex items-center justify-center text-text-secondary hover:text-white transition-all hover:border-primary/30 hover:bg-primary/10 cursor-pointer z-10">
+              <button type="button" onClick={() => setSelectedService(null)} className="absolute -top-3 -right-3 md:-top-4 md:-right-4 w-12 h-12 rounded-full glass flex items-center justify-center text-gray-300 hover:text-white transition-all hover:border-primary/30 hover:bg-primary/10 cursor-pointer z-10">
                 <FiX />
               </button>
               <span className="text-6xl block mb-4">{selectedService.icon}</span>
               <span className="text-5xl font-black text-primary/10 absolute top-6 right-6 select-none">{selectedService.number}</span>
               <h3 className="text-2xl md:text-3xl font-bold mb-3">{selectedService.title}</h3>
               <div className="w-12 h-1 bg-primary rounded-full mb-4" />
-              <p className="text-text-secondary leading-relaxed text-base md:text-lg">
+              <p className="text-gray-300 leading-relaxed text-base md:text-lg">
                 {selectedService.desc}
               </p>
               <Link

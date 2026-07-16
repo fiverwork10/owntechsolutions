@@ -252,4 +252,19 @@
   .perspective-1000 { perspective: 1000px; }
   .preserve-3d { transform-style: preserve-3d; }
   .backface-hidden { backface-visibility: hidden; }
+  @keyframes slideBar {
+    0% { left: -33%; }
+    100% { left: 100%; }
+  }
+  .animate-slideBar { animation: slideBar 3s ease-in-out infinite; }
+  @keyframes waveSway {
+    0%, 100% { transform: translateX(0) translateY(0); }
+    25% { transform: translateX(12px) translateY(-8px); }
+    50% { transform: translateX(-8px) translateY(4px); }
+    75% { transform: translateX(6px) translateY(-4px); }
+  }
+  .wave-line {
+    transform-origin: center center;
+    animation: waveSway var(--wave-dur, 6s) ease-in-out var(--wave-delay, 0s) infinite;
+  }
 }
