@@ -68,7 +68,8 @@ export default function ChatBot() {
       if (msg.conversationId) setConversationId(msg.conversationId);
       setMessages(prev => {
         if (prev.some(m => m._id === msg._id)) return prev;
-        return [...prev, msg];
+        const cleaned = prev.filter(m => !(typeof m._id === 'string' && m._id.startsWith('temp_')));
+        return [...cleaned, msg];
       });
     });
 
@@ -92,9 +93,9 @@ export default function ChatBot() {
     setInput('');
     setShowEmoji(false);
     setSending(true);
+    const tempId = 'temp_' + Date.now();
 
     if (selectedFile) {
-      const tempId = 'temp_' + Date.now();
       setMessages(prev => [...prev, {
         _id: tempId, sender: 'user', content: text || filePreview?.name || 'File',
         messageType: filePreview?.type || 'document', createdAt: new Date().toISOString()
@@ -108,10 +109,13 @@ export default function ChatBot() {
       setSelectedFile(null);
       setFilePreview(null);
       setSending(false);
-      axios.post(`${API}/api/whatsapp/send-media`, form).then(() => setMessages(prev => prev.filter(m => m._id !== tempId))).catch(() => setMessages(prev => prev.filter(m => m._id !== tempId)));
+      axios.post(`${API}/api/whatsapp/send-media`, form).catch(() => {});
       return;
     }
 
+    setMessages(prev => [...prev, {
+      _id: tempId, sender: 'user', content: text, messageType: 'text', createdAt: new Date().toISOString()
+    }]);
     const socket = socketRef.current;
     if (socket) {
       socket.emit('user:send', { guestId, content: text, messageType: 'text', visitorName: user?.name || 'Website Visitor', userId: user?._id });
@@ -178,7 +182,7 @@ export default function ChatBot() {
         if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop());
         setIsRecording(false);
         setRecordingDuration(0);
-        axios.post(`${API}/api/whatsapp/send-media`, form).then(() => setMessages(prev => prev.filter(m => m._id !== tempId))).catch(() => setMessages(prev => prev.filter(m => m._id !== tempId)));
+        axios.post(`${API}/api/whatsapp/send-media`, form).catch(() => {});
       };
       mediaRecorder.start(100);
       setIsRecording(true);

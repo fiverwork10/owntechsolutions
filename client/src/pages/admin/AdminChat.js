@@ -151,6 +151,14 @@ export default function AdminChat() {
       return;
     }
 
+    setMessages(prev => [...prev, {
+      _id: `temp_${Date.now()}`,
+      sender: 'admin',
+      content: text,
+      createdAt: new Date().toISOString(),
+      messageType: 'text',
+      sending: true
+    }]);
     socket.emit('admin:reply', {
       conversationId: selectedConv._id,
       guestId: selectedConv.guestId,
