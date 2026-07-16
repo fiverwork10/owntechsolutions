@@ -478,7 +478,7 @@ export default function ChatBot() {
                   <FiSmile size={15} />
                 </motion.button>
               </div>
-              <textarea value={input} onChange={e => { setInput(e.target.value); emitTyping(); }} onKeyPress={handleKeyPress} placeholder="Type a message..." className="flex-1 px-1 py-2.5 md:py-3 bg-transparent text-white placeholder-white/40 outline-none resize-none text-sm md:text-base leading-relaxed min-w-0" rows={1} disabled={sending}
+              <textarea value={input} onChange={e => { setInput(e.target.value); emitTyping(); }} onKeyPress={handleKeyPress} placeholder="Type a message..." className="flex-1 px-1 py-2.5 md:py-3 bg-transparent text-white placeholder-white/40 outline-none resize-none text-base leading-relaxed min-w-0" rows={1} disabled={sending}
                 onInput={e => { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px'; }} />
               <div className="flex items-center gap-1">
                 <motion.button onClick={handleMicClick} whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
