@@ -34,6 +34,15 @@ const Navbar = () => {
   useEffect(() => { setIsOpen(false); }, [location]);
 
   useEffect(() => {
+    if (isOpen) {
+      document.body.classList.add('menu-open');
+    } else {
+      document.body.classList.remove('menu-open');
+    }
+    return () => document.body.classList.remove('menu-open');
+  }, [isOpen]);
+
+  useEffect(() => {
     const handleClick = (e) => {
       if (userMenuRef.current && !userMenuRef.current.contains(e.target)) setShowUserMenu(false);
     };
@@ -56,7 +65,7 @@ const Navbar = () => {
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.6, ease: 'easeOut' }}
-      className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-500 ${
+      className={`fixed top-0 left-0 right-0 z-[100] transition-[background,box-shadow] duration-500 ${
         scrolled
           ? 'bg-[rgba(10,10,10,0.85)] backdrop-blur-2xl shadow-lg shadow-black/20'
           : 'bg-transparent'
@@ -82,13 +91,14 @@ const Navbar = () => {
                 <Link
                   key={link.path}
                   to={link.path}
+                  style={{ willChange: 'transform' }}
                   className={`relative px-4 py-2 text-sm font-bold rounded-lg transition-all duration-300 hover:scale-105 group ${
                     isActive
                       ? 'text-white [text-shadow:0_0_8px_rgba(255,255,255,0.4)]'
                       : 'text-white'
                   }`}
                 >
-                  <span className="absolute inset-0 rounded-lg border border-transparent group-hover:bg-primary/10 group-hover:border-primary/20 group-hover:shadow-[0_0_12px_rgba(139,92,246,0.25)] transition-all duration-500" />
+                  <span className="absolute inset-0 rounded-lg border border-transparent group-hover:bg-white/5 group-hover:border-white/20 group-hover:shadow-[0_0_16px_rgba(255,255,255,0.2)] transition-all duration-300" />
                   {isActive && (
                     <motion.span
                       layoutId="activeNav"
@@ -96,15 +106,15 @@ const Navbar = () => {
                       transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                     />
                   )}
-                  <span className="relative z-10 text-white group-hover:[text-shadow:0_0_8px_rgba(255,255,255,0.4)] transition-all duration-500">{link.label}</span>
+                  <span className="relative z-10 text-white group-hover:[text-shadow:0_0_12px_rgba(255,255,255,0.5),0_0_24px_rgba(255,255,255,0.2)] transition-all duration-300">{link.label}</span>
                 </Link>
               );
             })}
             <Link
               to="/contact"
-              className="ml-4 btn-primary !px-5 !py-2.5 !text-sm !rounded-lg group"
+              className="ml-4 btn-primary !px-5 !py-2.5 !text-sm !rounded-lg group hover:shadow-[0_0_24px_rgba(255,255,255,0.3)] transition-shadow duration-300"
             >
-              <FiMessageCircle className="group-hover:rotate-12 transition-transform" />
+              <FiMessageCircle className="group-hover:rotate-12 transition-transform duration-300" />
               Contact Us
             </Link>
 
@@ -133,52 +143,66 @@ const Navbar = () => {
             ) : (
               <div className="flex items-center gap-3 ml-auto">
                   <Link to="/login"
-                    className="px-4 py-2 rounded-xl glass text-sm font-medium text-text-secondary hover:text-white hover:bg-primary/10 border border-glass-border hover:border-primary/30 hover:shadow-[0_0_12px_rgba(139,92,246,0.2)] transition-all duration-300">
+                    className="px-4 py-2 rounded-xl glass text-sm font-medium text-text-secondary hover:text-white hover:bg-white/5 border border-glass-border hover:border-white/30 hover:shadow-[0_0_16px_rgba(255,255,255,0.15)] transition-all duration-300">
                     <FiLogIn size={15} className="inline mr-1.5" /> Login
                   </Link>
                 <Link to="/signup"
-                  className="px-4 py-2 rounded-xl gradient-bg text-sm font-medium text-white hover:shadow-[0_0_20px_rgba(139,92,246,0.3)] transition-all duration-300">
+                  className="px-4 py-2 rounded-xl gradient-bg text-sm font-medium text-white hover:shadow-[0_0_24px_rgba(255,255,255,0.25)] transition-all duration-300">
                   Sign Up
                 </Link>
               </div>
             )}
           </div>
 
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="lg:hidden w-11 h-11 flex items-center justify-center rounded-xl glass text-white hover:bg-primary/20 transition-all"
-            aria-label="Toggle menu"
-          >
-            {isOpen ? <FiX size={22} /> : <FiMenu size={22} />}
-          </button>
+          <div className="flex items-center gap-2 lg:hidden">
+            {token && user && user.role !== 'admin' && (
+              <div className="w-9 h-9 rounded-xl gradient-bg flex items-center justify-center text-sm font-bold text-white">
+                {user.name?.[0]?.toUpperCase() || <FiUser size={14} />}
+              </div>
+            )}
+            {token && user && user.role === 'admin' && (
+              <Link to="/admin/dashboard" className="w-9 h-9 rounded-xl gradient-bg flex items-center justify-center text-sm font-bold text-white">
+                <FiUser size={14} />
+              </Link>
+            )}
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="w-11 h-11 flex items-center justify-center rounded-xl glass text-white hover:bg-primary/20 transition-all"
+              aria-label="Toggle menu"
+            >
+              {isOpen ? <FiX size={22} /> : <FiMenu size={22} />}
+            </button>
+          </div>
         </div>
       </div>
 
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
-            className="lg:hidden border-t border-glass-border overflow-hidden"
+            initial={{ opacity: 0, scaleY: 0.95 }}
+            animate={{ opacity: 1, scaleY: 1 }}
+            exit={{ opacity: 0, scaleY: 0.95 }}
+            transition={{ duration: 0.2 }}
+            style={{ transformOrigin: 'top', willChange: 'transform, opacity' }}
+            className="lg:hidden border-t border-glass-border"
           >
-            <div className="px-3 sm:px-4 py-3 sm:py-4 space-y-1.5 bg-background/95 backdrop-blur-2xl">
+            <div className="px-3 sm:px-4 py-3 sm:py-4 space-y-1 bg-background/95 backdrop-blur-2xl max-h-[calc(100dvh-4rem)] overflow-y-auto">
               {navLinks.map((link, i) => {
                 const isActive = location.pathname === link.path;
                 return (
                   <motion.div
                     key={link.path}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.05 }}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.04, duration: 0.25 }}
+                    style={{ willChange: 'transform, opacity' }}
                   >
                     <Link
                       to={link.path}
-                      className={`block px-4 py-3.5 rounded-xl font-bold transition-all text-base ${
+                      className={`block text-center px-4 py-3 rounded-xl font-bold transition-all duration-200 text-base ${
                         isActive
-                          ? 'bg-primary/10 text-white border border-primary/20 [text-shadow:0_0_8px_rgba(255,255,255,0.4)]'
-                          : 'text-white hover:bg-glass-bg'
+                          ? 'bg-primary/10 text-white border border-primary/20 shadow-[0_0_12px_rgba(139,92,246,0.2)] [text-shadow:0_0_8px_rgba(255,255,255,0.4)]'
+                          : 'text-white/80 hover:text-white hover:bg-white/5 hover:scale-[1.02] hover:shadow-[0_0_16px_rgba(255,255,255,0.15)] hover:[text-shadow:0_0_8px_rgba(255,255,255,0.4)]'
                       }`}
                     >
                       {link.label}
@@ -188,9 +212,9 @@ const Navbar = () => {
               })}
               <Link
                 to="/chat"
-                className="block mt-3 sm:mt-4 btn-primary !w-full !justify-center !py-3.5"
+                className="block text-center mt-3 sm:mt-4 px-4 py-3 rounded-xl font-bold text-base bg-gradient-to-r from-primary/20 to-primary/10 text-white border border-primary/20 hover:from-white/20 hover:to-white/10 hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(255,255,255,0.2)] transition-all duration-200"
               >
-                <FiMessageCircle /> Contact Us
+                <FiMessageCircle className="inline mr-2" /> Contact Us
               </Link>
 
               <div className="border-t border-glass-border pt-3 mt-3 space-y-2">
