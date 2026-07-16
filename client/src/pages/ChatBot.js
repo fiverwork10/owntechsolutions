@@ -257,7 +257,7 @@ export default function ChatBot() {
   }
 
   return (
-    <div className="pt-20 md:pt-24 flex flex-col h-screen chat-bg">
+    <div className="pt-20 md:pt-24 flex flex-col h-dvh md:h-screen max-w-full overflow-x-hidden chat-bg">
       <div className="rain-layer">
         {Array.from({ length: 12 }).map((_, i) => (
           <div key={`drop-${i}`}>
@@ -440,10 +440,10 @@ export default function ChatBot() {
             )}
           </AnimatePresence>
 
-          <div className="max-w-3xl mx-auto relative">
-            <div className="absolute -inset-6 bg-primary/30 rounded-[2rem] blur-3xl opacity-80 pointer-events-none" />
+          <div className="max-w-3xl mx-auto relative px-1">
+            <div className="absolute -inset-1 md:-inset-6 bg-primary/30 rounded-[2rem] blur-xl md:blur-3xl opacity-60 md:opacity-80 pointer-events-none" />
             <input ref={fileInputRef} type="file" onChange={handleFileSelect} className="hidden" />
-            <div className="relative flex items-center bg-background/80 backdrop-blur-xl border border-primary/40 rounded-2xl md:rounded-full px-2 md:px-4 py-2.5 md:py-3.5 shadow-[0_0_24px_rgba(139,92,246,0.15)] focus-within:border-primary/60 focus-within:shadow-[0_0_40px_rgba(139,92,246,0.3)] transition-all duration-300">
+            <div className="relative flex items-center bg-background/90 md:bg-background/80 backdrop-blur-xl border border-primary/40 rounded-xl md:rounded-full px-1.5 md:px-4 py-2 md:py-3.5 shadow-[0_0_24px_rgba(139,92,246,0.15)] focus-within:border-primary/60 focus-within:shadow-[0_0_40px_rgba(139,92,246,0.3)] transition-all duration-300">
               <div className="flex items-center gap-0.5">
                 <div className="relative" ref={uploadMenuRef}>
                   <motion.button onClick={() => { setShowUploadMenu(!showUploadMenu); setShowEmoji(false); }} whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
