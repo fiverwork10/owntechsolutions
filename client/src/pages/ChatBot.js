@@ -257,7 +257,7 @@ export default function ChatBot() {
   }
 
   return (
-    <div className="pt-20 md:pt-24 flex flex-col min-h-screen max-w-full overflow-x-hidden chat-bg">
+    <div className="pt-20 md:pt-24 flex flex-col h-dvh md:h-screen max-w-full overflow-x-hidden chat-bg">
       <div className="rain-layer">
         {Array.from({ length: 12 }).map((_, i) => (
           <div key={`drop-${i}`}>
@@ -303,7 +303,7 @@ export default function ChatBot() {
         )}
       </AnimatePresence>
 
-      <div className="flex flex-col max-w-full mx-auto w-full flex-1 min-h-0 relative z-[3]">
+      <div className="flex flex-col max-w-full mx-auto w-full h-full relative z-[3]">
         <div className="hidden md:flex px-3 md:px-8 py-3 md:py-4 border-b border-glass-border items-center justify-between bg-background shrink-0">
           <div className="flex items-center gap-2 md:gap-3">
             <div className="w-9 h-9 md:w-11 md:h-11 rounded-xl gradient-bg flex items-center justify-center font-bold text-base md:text-lg shrink-0">O</div>
