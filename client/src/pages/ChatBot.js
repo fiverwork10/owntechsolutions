@@ -300,8 +300,8 @@ export default function ChatBot() {
             <motion.div initial={{ scale: 0.85, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.85, opacity: 0 }} transition={{ type: 'spring', stiffness: 300, damping: 28 }}
               className="flex items-center justify-center p-2 md:p-4 max-w-full max-h-full"
             >
-              {lightbox.type === 'image' ? <img src={lightbox.url} alt="" className="max-w-full max-h-dvh object-contain rounded-xl md:rounded-2xl shadow-2xl shadow-primary/10" onClick={e => e.stopPropagation()} />
-              : <video src={lightbox.url} controls className="max-w-full max-h-dvh rounded-xl md:rounded-2xl shadow-2xl shadow-primary/10" onClick={e => e.stopPropagation()} />}
+              {lightbox.type === 'image' ? <img src={lightbox.url} alt="" className="max-w-full max-h-screen object-contain rounded-xl md:rounded-2xl shadow-2xl shadow-primary/10" onClick={e => e.stopPropagation()} />
+              : <video src={lightbox.url} controls className="max-w-full max-h-screen rounded-xl md:rounded-2xl shadow-2xl shadow-primary/10" onClick={e => e.stopPropagation()} />}
             </motion.div>
           </motion.div>
         )}
