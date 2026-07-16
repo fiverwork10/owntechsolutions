@@ -340,7 +340,7 @@ export default function AdminChat() {
 
   return (
     <AdminLayout title="Live Chat">
-      <div className="flex h-screen md:h-screen max-w-full overflow-x-hidden chat-bg">
+      <div className="flex h-[calc(107dvh-8rem)] md:h-[calc(107vh-8rem)] -m-4 md:-m-8 chat-bg">
         <div className="rain-layer">
           {Array.from({ length: 12 }).map((_, i) => (
             <div key={`drop-${i}`}>
@@ -380,9 +380,9 @@ export default function AdminChat() {
                 className="flex items-center justify-center p-2 md:p-4 max-w-full max-h-full"
               >
                 {lightbox.type === 'image' ? (
-                  <img src={lightbox.url} alt="" className="max-w-full max-h-screen object-contain rounded-xl md:rounded-2xl shadow-2xl shadow-primary/10" onClick={e => e.stopPropagation()} />
+                  <img src={lightbox.url} alt="" className="max-w-full max-h-dvh object-contain rounded-xl md:rounded-2xl shadow-2xl shadow-primary/10" onClick={e => e.stopPropagation()} />
                 ) : lightbox.type === 'video' ? (
-                  <video src={lightbox.url} controls className="max-w-full max-h-screen rounded-xl md:rounded-2xl shadow-2xl shadow-primary/10" onClick={e => e.stopPropagation()} />
+                  <video src={lightbox.url} controls className="max-w-full max-h-dvh rounded-xl md:rounded-2xl shadow-2xl shadow-primary/10" onClick={e => e.stopPropagation()} />
                 ) : null}
               </motion.div>
             </motion.div>
@@ -580,9 +580,9 @@ export default function AdminChat() {
                     </motion.div>
                   )}
                 </AnimatePresence>
-                <div className="max-w-3xl mx-auto w-full relative px-1">
-                  <div className="absolute -inset-1 md:-inset-6 bg-primary/30 rounded-[2rem] blur-xl md:blur-3xl opacity-60 md:opacity-80 pointer-events-none" />
-                  <div className="relative flex items-center bg-background/90 md:bg-background/80 backdrop-blur-xl border border-primary/40 rounded-xl md:rounded-full px-1.5 md:px-4 py-2 md:py-3.5 shadow-[0_0_24px_rgba(139,92,246,0.15)] focus-within:border-primary/60 focus-within:shadow-[0_0_40px_rgba(139,92,246,0.3)] transition-all duration-300">
+                <div className="max-w-3xl mx-auto w-full relative">
+                  <div className="absolute -inset-6 bg-primary/30 rounded-[2rem] blur-3xl opacity-80 pointer-events-none" />
+                  <div className="relative flex items-center bg-background/80 backdrop-blur-xl border border-primary/40 rounded-2xl md:rounded-full px-2 md:px-4 py-2.5 md:py-3.5 shadow-[0_0_24px_rgba(139,92,246,0.15)] focus-within:border-primary/60 focus-within:shadow-[0_0_40px_rgba(139,92,246,0.3)] transition-all duration-300">
                     <div className="flex items-center gap-0.5">
                       <div className="relative" ref={uploadMenuRef}>
                         <input ref={fileInputRef} type="file" onChange={handleFileSelect} className="hidden" />
@@ -618,7 +618,7 @@ export default function AdminChat() {
                         <FiSmile size={15} />
                       </motion.button>
                     </div>
-                    <textarea value={input} onChange={e => { setInput(e.target.value); emitTyping(); }} onKeyPress={handleKeyPress} placeholder="Type a reply..." className="flex-1 px-1 py-2.5 md:py-3 bg-transparent text-white placeholder-white/30 outline-none resize-none text-base leading-relaxed min-w-0 max-h-32" rows={1} onInput={e => { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 128) + 'px'; }} />
+                    <textarea value={input} onChange={e => { setInput(e.target.value); emitTyping(); }} onKeyPress={handleKeyPress} placeholder="Type a reply..." className="flex-1 px-1 py-2.5 md:py-3 bg-transparent text-white placeholder-white/30 outline-none resize-none text-sm md:text-base leading-relaxed min-w-0 max-h-32" rows={1} onInput={e => { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 128) + 'px'; }} />
                     <div className="flex items-center gap-1">
                       <motion.button onClick={handleMicClick} whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
                         className={`w-8 h-8 md:w-9 md:h-9 rounded-xl md:rounded-full flex items-center justify-center transition-all shrink-0 ${
