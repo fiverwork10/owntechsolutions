@@ -257,7 +257,7 @@ export default function ChatBot() {
   }
 
   return (
-    <div className="pt-20 md:pt-24 flex flex-col h-dvh md:h-screen max-w-full overflow-x-hidden chat-bg">
+    <div className="pt-16 md:pt-20 flex flex-col h-screen max-w-full overflow-x-hidden chat-bg">
       <div className="rain-layer">
         {Array.from({ length: 12 }).map((_, i) => (
           <div key={`drop-${i}`}>
