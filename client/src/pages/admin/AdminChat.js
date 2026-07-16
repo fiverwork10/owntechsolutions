@@ -340,7 +340,7 @@ export default function AdminChat() {
 
   return (
     <AdminLayout title="Live Chat">
-      <div className="flex h-[calc(107dvh-8rem)] md:h-[calc(107vh-8rem)] -m-4 md:-m-8 chat-bg">
+      <div className="flex h-[calc(100dvh-8rem)] md:h-[calc(100dvh-8rem)] -m-4 md:-m-8 chat-bg">
         <div className="rain-layer">
           {Array.from({ length: 12 }).map((_, i) => (
             <div key={`drop-${i}`}>
