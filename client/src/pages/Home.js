@@ -1,19 +1,14 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiArrowRight, FiPlay, FiChevronLeft, FiChevronRight, FiPhone, FiMail, FiMapPin, FiSend, FiX } from 'react-icons/fi';
-import { FaWhatsapp, FaStar, FaQuoteLeft, FaMapMarkerAlt } from 'react-icons/fa';
+import { FiArrowRight, FiPlay, FiPhone, FiMail, FiMapPin, FiSend, FiX } from 'react-icons/fi';
+import { FaWhatsapp, FaStar, FaQuoteLeft } from 'react-icons/fa';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination } from 'swiper/modules';
 import { useForm } from 'react-hook-form';
 import axios from 'axios';
 import 'swiper/css';
 import 'swiper/css/pagination';
-
-
-gsap.registerPlugin(ScrollTrigger);
 
 const services = [
   { number: '01', title: 'MERN Stack Web Development', desc: 'Full-stack web applications using MongoDB, Express.js, React, and Node.js with modern architecture and best practices.', icon: '⚛️' },
@@ -33,36 +28,9 @@ const testimonials = [
 ];
 
 function Home() {
-  const servicesRef = useRef(null);
-  const reviewsRef = useRef(null);
-  const aboutRef = useRef(null);
-  const contactRef = useRef(null);
-  const heroRef = useRef(null);
   const [contactSuccess, setContactSuccess] = useState('');
   const [selectedService, setSelectedService] = useState(null);
   const { register, handleSubmit, formState: { errors }, reset } = useForm();
-
-  useEffect(() => {
-    const isMobile = window.innerWidth < 768;
-
-    const ctx = gsap.context(() => {
-      if (!isMobile) {
-        gsap.set('.service-card', { y: 100, opacity: 0 });
-        gsap.to('.service-card', {
-          y: 0, opacity: 1, duration: 0.8, stagger: 0.15, ease: 'power3.out',
-          scrollTrigger: { trigger: servicesRef.current, start: 'top 80%', toggleActions: 'play none none reverse' }
-        });
-        gsap.from('.stats-number', {
-          textContent: 0, duration: 2, ease: 'power1.out', snap: { textContent: 1 },
-          scrollTrigger: { trigger: '.stats-section', start: 'top 80%', toggleActions: 'play none none reverse' }
-        });
-      }
-    });
-
-    return () => {
-      ctx.revert();
-    };
-  }, []);
 
   const onSubmit = async (data) => {
     try {
@@ -79,14 +47,11 @@ function Home() {
   return (
     <main>
 
-      <section
-        ref={heroRef}
-        className="relative min-h-screen flex items-center justify-center overflow-hidden pt-24 md:pt-28"
-      >
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-24 md:pt-28">
           <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/5 rounded-full blur-[60px]" />
           <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-primary/5 rounded-full blur-[60px]" />
 
-          <div className="absolute left-0 top-0 h-full w-[22%] overflow-hidden pointer-events-none z-0" aria-hidden="true" style={{ maskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)' }}>
+          <div className="hidden md:block absolute left-0 top-0 h-full w-[22%] overflow-hidden pointer-events-none z-0" aria-hidden="true" style={{ maskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)' }}>
             <div className="absolute inset-0 bg-gradient-to-r from-primary/25 via-primary/15 to-transparent blur-3xl opacity-70" />
             <svg className="relative w-full h-full opacity-40 md:opacity-60" viewBox="0 0 240 900" preserveAspectRatio="none" style={{ filter: 'drop-shadow(0 0 10px rgba(139,92,246,0.6))' }}>
               <defs>
@@ -119,7 +84,7 @@ function Home() {
               ))}
             </svg>
           </div>
-          <div className="absolute right-0 top-0 h-full w-[22%] overflow-hidden pointer-events-none z-0" aria-hidden="true" style={{ maskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)' }}>
+          <div className="hidden md:block absolute right-0 top-0 h-full w-[22%] overflow-hidden pointer-events-none z-0" aria-hidden="true" style={{ maskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)' }}>
             <div className="absolute inset-0 bg-gradient-to-l from-primary/25 via-primary/15 to-transparent blur-3xl opacity-70" />
             <svg className="relative w-full h-full opacity-40 md:opacity-60" viewBox="0 0 240 900" preserveAspectRatio="none" style={{ filter: 'drop-shadow(0 0 10px rgba(139,92,246,0.6))' }}>
               <defs>
@@ -178,7 +143,7 @@ function Home() {
         </motion.div>
       </section>
 
-      <section ref={servicesRef} className="relative py-16 md:py-32 overflow-hidden">
+      <section className="relative py-16 md:py-32 overflow-hidden">
         <div className="absolute top-0 right-0 w-[300px] md:w-[500px] h-[300px] md:h-[500px] bg-primary opacity-[0.03] rounded-full blur-[100px] md:blur-[150px]" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12 md:mb-20">
@@ -187,9 +152,13 @@ function Home() {
           </motion.div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {services.map((service, i) => (
-              <div
+              <motion.div
                 key={i}
-                className="service-card group relative card cursor-pointer overflow-hidden"
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.08, duration: 0.5 }}
+                className="group relative card cursor-pointer overflow-hidden"
                 onClick={() => setSelectedService(service)}
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -202,13 +171,13 @@ function Home() {
                     Learn More <FiArrowRight />
                   </div>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      <section ref={aboutRef} className="relative py-16 md:py-32 stats-section">
+      <section className="relative py-16 md:py-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
             {[
@@ -230,7 +199,7 @@ function Home() {
 
 
 
-      <section ref={reviewsRef} className="relative py-16 md:py-32">
+      <section className="relative py-16 md:py-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12 md:mb-16">
             <h2 className="section-title">What Our Clients Say</h2>
@@ -269,7 +238,7 @@ function Home() {
         </div>
       </section>
 
-      <section ref={contactRef} id="contact" className="relative py-16 md:py-32">
+      <section id="contact" className="relative py-16 md:py-32">
         <div className="absolute inset-0 opacity-[0.03]">
           <div className="absolute top-0 left-1/3 w-[200px] md:w-[400px] h-[200px] md:h-[400px] bg-primary rounded-full blur-[80px] md:blur-[150px]" />
         </div>

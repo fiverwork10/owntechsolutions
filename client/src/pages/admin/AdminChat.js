@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { io } from 'socket.io-client';
 import { FiSend, FiPaperclip, FiTrash2, FiX, FiDownload, FiMaximize2, FiMessageCircle, FiUser, FiCpu, FiClock, FiCheck, FiChevronLeft, FiImage, FiVideo, FiFile, FiMic, FiSearch, FiSmile } from 'react-icons/fi';
-import { FaWhatsapp } from 'react-icons/fa';
 import { useQuery } from '@tanstack/react-query';
 import AdminLayout from '../../components/AdminLayout';
 import VoiceNotePlayer from '../../components/VoiceNotePlayer';
@@ -26,6 +25,7 @@ export default function AdminChat() {
   const [recordingDuration, setRecordingDuration] = useState(0);
   const [sendingMedia, setSendingMedia] = useState(false);
   const [showEmoji, setShowEmoji] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const typingTimeoutRef = useRef(null);
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -322,6 +322,12 @@ export default function AdminChat() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+
   const emitTyping = () => {
     const socket = socketRef.current;
     if (!socket || !selectedConv) return;
@@ -341,7 +347,7 @@ export default function AdminChat() {
   return (
     <AdminLayout title="Live Chat">
       <div className="flex h-[calc(100dvh-8rem)] md:h-[calc(100dvh-8rem)] -m-4 md:-m-8 chat-bg">
-        <div className="rain-layer">
+        {!isMobile && (<div className="rain-layer">
           {Array.from({ length: 12 }).map((_, i) => (
             <div key={`drop-${i}`}>
               <div className="rain-drop" style={{
@@ -364,9 +370,9 @@ export default function AdminChat() {
               }} />
             </div>
           ))}
-        </div>
-        <div className="chat-fog" />
-        <div className="chat-fog-2" />
+        </div>)}
+        {!isMobile && <div className="chat-fog" />}
+        {!isMobile && <div className="chat-fog-2" />}
         <AnimatePresence>
           {lightbox && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }}

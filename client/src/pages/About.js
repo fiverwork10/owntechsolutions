@@ -1,13 +1,7 @@
-import React, { useEffect, useRef } from 'react';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { FiTarget, FiEye, FiHeart, FiCheck, FiArrowRight, FiAward, FiUsers, FiGlobe, FiCode } from 'react-icons/fi';
-import { Canvas } from '@react-three/fiber';
-import { Float, Sphere, MeshDistortMaterial } from '@react-three/drei';
 import { Link } from 'react-router-dom';
-
-gsap.registerPlugin(ScrollTrigger);
 
 const timeline = [
   { year: '2020', title: 'Founded', desc: 'OwnTechSolutions was established with a vision to transform digital ideas into reality.' },
@@ -29,65 +23,29 @@ const skills = [
 
 function ThreeBackground() {
   return (
-    <Canvas camera={{ position: [0, 0, 5], fov: 60 }} className="pointer-events-none">
-      <ambientLight intensity={0.5} />
-      <directionalLight position={[5, 5, 5]} intensity={0.5} color="#8B5CF6" />
-      <Float speed={1.5} rotationIntensity={0.5} floatIntensity={2}>
-        <Sphere args={[1.2, 64, 64]} position={[0, 0, 0]}>
-          <MeshDistortMaterial color="#8B5CF6" transparent opacity={0.08} roughness={0.2} metalness={0.8} distort={0.4} speed={2} />
-        </Sphere>
-      </Float>
-      <Float speed={2} rotationIntensity={0.3} floatIntensity={1.5}>
-        <Sphere args={[0.6, 32, 32]} position={[2.5, 1.5, -1]}>
-          <MeshDistortMaterial color="#A78BFA" transparent opacity={0.1} roughness={0.3} metalness={0.6} distort={0.3} speed={3} />
-        </Sphere>
-      </Float>
-    </Canvas>
+    <div className="absolute inset-0 opacity-40 pointer-events-none">
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-gradient-radial from-primary/20 via-primary/10 to-transparent blur-3xl" />
+      <div className="absolute top-1/4 right-1/4 w-[300px] h-[300px] rounded-full bg-gradient-radial from-purple-400/15 via-transparent to-transparent blur-3xl" />
+      <div className="absolute bottom-1/4 left-1/4 w-[200px] h-[200px] rounded-full bg-gradient-radial from-primary/10 via-transparent to-transparent blur-2xl" />
+    </div>
   );
 }
 
 export default function About() {
-  const headerRef = useRef(null);
-  const skillsRef = useRef(null);
-  const timelineRef = useRef(null);
-
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.set('.about-animate', { y: 60, opacity: 0 });
-      gsap.to('.about-animate', {
-        y: 0, opacity: 1, duration: 0.8, stagger: 0.15, ease: 'power3.out',
-        scrollTrigger: { trigger: headerRef.current, start: 'top 85%', toggleActions: 'play none none reverse' }
-      });
-      gsap.fromTo('.skill-bar',
-        { width: '0%' },
-        {
-          width: (i, el) => el.getAttribute('data-width') + '%',
-          duration: 1.5, ease: 'power3.out', stagger: 0.2,
-          scrollTrigger: { trigger: skillsRef.current, start: 'top 80%', toggleActions: 'play none none reverse' }
-        }
-      );
-      gsap.set('.timeline-item', { x: -60, opacity: 0 });
-      gsap.to('.timeline-item', {
-        x: 0, opacity: 1, duration: 0.8, stagger: 0.2, ease: 'power3.out',
-        scrollTrigger: { trigger: timelineRef.current, start: 'top 80%', toggleActions: 'play none none reverse' }
-      });
-    });
-    return () => ctx.revert();
-  }, []);
 
   return (
     <div className="pt-32 pb-20">
-      <section ref={headerRef} className="relative min-h-[60vh] flex items-center overflow-hidden mb-20">
-        <div className="absolute inset-0 z-0 opacity-40"><ThreeBackground /></div>
+      <section className="relative min-h-[60vh] flex items-center overflow-hidden mb-20">
+        <ThreeBackground />
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="max-w-3xl">
-            <span className="text-primary text-sm font-medium tracking-widest uppercase about-animate">About Us</span>
-            <h1 className="text-5xl md:text-7xl font-bold mt-4 mb-6 about-animate">
+            <motion.span initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }} className="text-primary text-sm font-medium tracking-widest uppercase">About Us</motion.span>
+            <motion.h1 initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }} className="text-5xl md:text-7xl font-bold mt-4 mb-6">
               We Build <span className="gradient-text">Digital Excellence</span>
-            </h1>
-            <p className="text-xl text-text-secondary leading-relaxed about-animate">
+            </motion.h1>
+            <motion.p initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.3 }} className="text-xl text-text-secondary leading-relaxed">
               OwnTechSolutions is a professional software development agency based in Karachi, Pakistan. We specialize in MERN Stack Development, Flutter Mobile Development, ASP.NET Enterprise Solutions, UI/UX Design, and AI-Powered Applications.
-            </p>
+            </motion.p>
           </motion.div>
         </div>
       </section>
@@ -117,7 +75,7 @@ export default function About() {
         </div>
       </section>
 
-      <section ref={skillsRef} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-20">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-20">
         <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
           <h2 className="section-title">Our Expertise</h2>
           <p className="section-subtitle">Years of experience and continuous learning make us experts in our field</p>
@@ -140,14 +98,14 @@ export default function About() {
                 <span className="text-primary font-bold">{skill.level}%</span>
               </div>
               <div className="w-full h-2 rounded-full bg-background-card overflow-hidden">
-                <div className="skill-bar h-full rounded-full gradient-bg" data-width={skill.level} />
+                <motion.div initial={{ width: '0%' }} whileInView={{ width: `${skill.level}%` }} viewport={{ once: true }} transition={{ duration: 1.2, ease: 'easeOut', delay: i * 0.15 }} className="h-full rounded-full gradient-bg" />
               </div>
             </motion.div>
           ))}
         </div>
       </section>
 
-      <section ref={timelineRef} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-20">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-20">
         <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
           <h2 className="section-title">Our Journey</h2>
           <p className="section-subtitle">Milestones that shaped our growth and expertise</p>
@@ -156,9 +114,13 @@ export default function About() {
           <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-primary via-primary/50 to-transparent" />
           <div className="space-y-12">
             {timeline.map((item, i) => (
-              <div
+              <motion.div
                 key={i}
-                className={`timeline-item relative flex items-start gap-8 ${i % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'}`}
+                initial={{ opacity: 0, x: -40 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.12, duration: 0.6 }}
+                className={`relative flex items-start gap-8 ${i % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'}`}
               >
                 <div className={`flex-1 ${i % 2 === 0 ? 'md:text-right' : 'md:text-left'} hidden md:block`}>
                   <div className="card inline-block">
@@ -179,7 +141,7 @@ export default function About() {
                     <p className="text-text-secondary text-sm">{item.desc}</p>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>

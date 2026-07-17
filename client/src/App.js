@@ -34,16 +34,17 @@ function App() {
   const lenisRef = useRef(null);
 
   useEffect(() => {
+    if (window.innerWidth < 768) return;
     const lenis = new Lenis({
       duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       orientation: 'vertical',
       smoothWheel: true,
-      smoothTouch: true,
+      smoothTouch: false,
       wheelMultiplier: 1,
       touchMultiplier: 1.5,
       infinite: false,
-      syncTouch: true,
+      syncTouch: false,
     });
     lenis.resize();
     lenisRef.current = lenis;

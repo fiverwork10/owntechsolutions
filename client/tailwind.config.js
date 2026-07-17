@@ -39,7 +39,6 @@ module.exports = {
         'slide-up': 'slideUp 0.6s ease-out',
         'slide-down': 'slideDown 0.3s ease-out',
         'scale-in': 'scaleIn 0.4s ease-out',
-        'gradient': 'gradient 3s ease infinite',
         'shimmer': 'shimmer 2s infinite'
       },
       keyframes: {
@@ -71,18 +70,12 @@ module.exports = {
           '0%': { transform: 'scale(0.9)', opacity: '0' },
           '100%': { transform: 'scale(1)', opacity: '1' }
         },
-        gradient: {
-          '0%, 100%': { backgroundPosition: '0% 50%' },
-          '50%': { backgroundPosition: '100% 50%' }
-        },
         shimmer: {
           '0%': { backgroundPosition: '-200% 0' },
           '100%': { backgroundPosition: '200% 0' }
         }
       },
-      backgroundSize: {
-        '300%': '300%',
-      },
+
       backdropBlur: {
         xs: '2px'
       }

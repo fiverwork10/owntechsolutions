@@ -33,6 +33,7 @@ export default function ChatBot() {
   const [isRecording, setIsRecording] = useState(false);
   const [recordingDuration, setRecordingDuration] = useState(0);
   const [showUploadMenu, setShowUploadMenu] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const typingTimeoutRef = useRef(null);
   const messagesEndRef = useRef(null);
   const messagesContainerRef = useRef(null);
@@ -242,6 +243,12 @@ export default function ChatBot() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+
   if (!user) {
     return (
       <div className="pt-20 md:pt-24 pb-6 md:pb-10 flex flex-col chat-bg items-center justify-center">
@@ -262,7 +269,7 @@ export default function ChatBot() {
 
   return (
     <div className="pt-16 md:pt-20 flex flex-col h-dvh max-w-full overflow-x-hidden chat-bg">
-      <div className="rain-layer">
+      {!isMobile && (<div className="rain-layer">
         {Array.from({ length: 12 }).map((_, i) => (
           <div key={`drop-${i}`}>
             <div className="rain-drop" style={{
@@ -285,9 +292,9 @@ export default function ChatBot() {
             }} />
           </div>
         ))}
-      </div>
-      <div className="chat-fog" />
-      <div className="chat-fog-2" />
+      </div>)}
+      {!isMobile && <div className="chat-fog" />}
+      {!isMobile && <div className="chat-fog-2" />}
       <AnimatePresence>
         {lightbox && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }}

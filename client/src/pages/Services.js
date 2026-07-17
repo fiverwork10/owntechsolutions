@@ -1,13 +1,8 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiCheck, FiArrowRight, FiCode, FiSmartphone, FiLayout, FiServer, FiCloud, FiDatabase, FiGrid, FiMonitor, FiShield, FiX, FiMail, FiPhone } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { io } from 'socket.io-client';
-
-gsap.registerPlugin(ScrollTrigger);
 
 const iconMap = {
   FiCode, FiSmartphone, FiLayout, FiServer, FiCloud, FiDatabase, FiGrid, FiMonitor, FiShield
@@ -139,7 +134,6 @@ function ServiceModal({ service, onClose }) {
 }
 
 export default function Services() {
-  const headerRef = useRef(null);
   const [services, setServices] = useState(fallbackServices);
   const [selectedService, setSelectedService] = useState(null);
 
@@ -151,26 +145,9 @@ export default function Services() {
 
   useEffect(() => { fetchServices(); }, []);
 
-  useEffect(() => {
-    const socket = io(process.env.REACT_APP_API_URL || 'http://localhost:5000');
-    socket.on('services_updated', fetchServices);
-    return () => socket.disconnect();
-  }, []);
-
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.set('.service-animate', { y: 80, opacity: 0 });
-      gsap.to('.service-animate', {
-        y: 0, opacity: 1, duration: 0.8, stagger: 0.15, ease: 'power3.out',
-        scrollTrigger: { trigger: headerRef.current, start: 'top 85%', toggleActions: 'play none none reverse' }
-      });
-    }, headerRef);
-    return () => ctx.revert();
-  }, []);
-
   return (
     <div className="pt-32 pb-20">
-      <div ref={headerRef} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-20">
           <span className="text-primary text-sm font-medium tracking-widest uppercase">Our Services</span>
           <h1 className="section-title mt-4">Premium Development Services</h1>
@@ -186,7 +163,11 @@ export default function Services() {
             <div
               key={i}
               onClick={() => setSelectedService(service)}
-              className="service-animate group relative card overflow-hidden cursor-pointer"
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.08, duration: 0.5 }}
+              className="group relative card overflow-hidden cursor-pointer"
             >
               <div className="absolute top-0 right-0 w-64 h-64 opacity-[0.04] rounded-full blur-[100px]" style={{ background: service.color }} />
               <div className="relative z-10">

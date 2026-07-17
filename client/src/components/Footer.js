@@ -1,8 +1,8 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { FiGithub, FiLinkedin, FiTwitter, FiMail, FiPhone, FiMapPin, FiMessageCircle, FiSend } from 'react-icons/fi';
 import { FaWhatsapp } from 'react-icons/fa';
-import { gsap } from 'gsap';
 
 const quickLinks = [
   { path: '/', label: 'Home' },
@@ -21,23 +21,8 @@ const services = [
 ];
 
 const Footer = () => {
-  const sectionRef = useRef(null);
-
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.from('.footer-animate', {
-        y: 60,
-        opacity: 0,
-        duration: 0.8,
-        stagger: 0.1,
-        delay: 0.1
-      });
-    }, sectionRef);
-    return () => ctx.revert();
-  }, []);
-
   return (
-    <footer ref={sectionRef} className="relative bg-background border-t border-glass-border overflow-hidden">
+    <footer className="relative bg-background border-t border-glass-border overflow-hidden">
       <div className="absolute top-0 left-0 h-[2px] w-2/5 bg-gradient-to-r from-transparent via-primary to-transparent animate-slideBar opacity-90" style={{ filter: 'blur(3px)', boxShadow: '0 0 20px rgba(139,92,246,0.6), 0 0 40px rgba(139,92,246,0.3)' }} />
       <div className="absolute top-0 left-0 h-px w-2/5 bg-gradient-to-r from-transparent via-primary/80 to-transparent animate-slideBar" />
 
@@ -48,7 +33,7 @@ const Footer = () => {
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 md:pt-20 pb-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12 mb-12 md:mb-16">
-          <div className="footer-animate">
+          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }}>
             <Link to="/" className="inline-flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-xl gradient-bg flex items-center justify-center font-bold text-lg">O</div>
               <span className="text-xl font-bold">
@@ -68,9 +53,9 @@ const Footer = () => {
                 <FaWhatsapp size={18} />
               </a>
             </div>
-          </div>
+          </motion.div>
 
-          <div className="footer-animate">
+          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }}>
             <h3 className="text-lg font-semibold mb-6 text-white/90">Quick Links</h3>
             <ul className="space-y-3">
               {quickLinks.map((link, i) => (
@@ -82,9 +67,9 @@ const Footer = () => {
                 </li>
               ))}
             </ul>
-          </div>
+          </motion.div>
 
-          <div className="footer-animate">
+          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.3 }}>
             <h3 className="text-lg font-semibold mb-6 text-white/90">Services</h3>
             <ul className="space-y-3">
               {services.map((service, i) => (
@@ -96,9 +81,9 @@ const Footer = () => {
                 </li>
               ))}
             </ul>
-          </div>
+          </motion.div>
 
-          <div className="footer-animate">
+          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.4 }}>
             <h3 className="text-lg font-semibold mb-6 text-white/90">Contact Info</h3>
             <ul className="space-y-4">
               <li className="flex items-start gap-3 text-white/70">
@@ -118,10 +103,10 @@ const Footer = () => {
                 <span>Live Chat Available</span>
               </li>
             </ul>
-          </div>
+          </motion.div>
         </div>
 
-        <div className="footer-animate border-t border-white/10 pt-8">
+        <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.5 }} className="border-t border-white/10 pt-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-white/50 text-sm">
               &copy; {new Date().getFullYear()} OwnTechSolutions. All rights reserved.
@@ -131,7 +116,7 @@ const Footer = () => {
               <a href="#" className="text-white/50 hover:text-primary hover:[text-shadow:0_0_12px_rgba(139,92,246,0.5)] text-sm transition-all duration-300">Terms of Service</a>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </footer>
   );

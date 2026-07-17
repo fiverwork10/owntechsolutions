@@ -46,16 +46,12 @@
   }
   .gradient-text {
     background: linear-gradient(135deg, #8B5CF6, #A78BFA, #6D28D9);
-    background-size: 200% 200%;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    animation: gradient 3s ease infinite;
   }
   .gradient-bg {
     background: linear-gradient(135deg, #8B5CF6, #6D28D9, #4C1D95);
-    background-size: 200% 200%;
-    animation: gradient 3s ease infinite;
   }
   .btn-primary {
     @apply relative inline-flex items-center justify-center gap-2 px-8 py-3 font-semibold text-white rounded-xl overflow-hidden;
@@ -247,6 +243,17 @@
   }
 }
 
+@keyframes waveSway {
+  0%, 100% { transform: translateX(0) translateY(0); }
+  25% { transform: translateX(12px) translateY(-8px); }
+  50% { transform: translateX(-8px) translateY(4px); }
+  75% { transform: translateX(6px) translateY(-4px); }
+}
+.wave-line {
+  transform-origin: center center;
+  animation: waveSway var(--wave-dur, 6s) ease-in-out var(--wave-delay, 0s) infinite;
+}
+
 @layer utilities {
   .text-balance { text-wrap: balance; }
   .perspective-1000 { perspective: 1000px; }
@@ -257,14 +264,5 @@
     100% { left: 100%; }
   }
   .animate-slideBar { animation: slideBar 3s ease-in-out infinite; }
-  @keyframes waveSway {
-    0%, 100% { transform: translateX(0) translateY(0); }
-    25% { transform: translateX(12px) translateY(-8px); }
-    50% { transform: translateX(-8px) translateY(4px); }
-    75% { transform: translateX(6px) translateY(-4px); }
-  }
-  .wave-line {
-    transform-origin: center center;
-    animation: waveSway var(--wave-dur, 6s) ease-in-out var(--wave-delay, 0s) infinite;
-  }
+
 }
