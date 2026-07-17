@@ -13,7 +13,12 @@ exports.getTestimonials = async (req, res) => {
 
 exports.createTestimonial = async (req, res) => {
   try {
-    const testimonial = new Testimonial(req.body);
+    const data = { ...req.body };
+    if (req.file) {
+      data.photo = req.file.path;
+    }
+    if (data.rating) data.rating = Number(data.rating);
+    const testimonial = new Testimonial(data);
     await testimonial.save();
     emitDashboardUpdate(req.app.get('io'));
     res.status(201).json(testimonial);
@@ -24,7 +29,12 @@ exports.createTestimonial = async (req, res) => {
 
 exports.updateTestimonial = async (req, res) => {
   try {
-    const testimonial = await Testimonial.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const data = { ...req.body };
+    if (req.file) {
+      data.photo = req.file.path;
+    }
+    if (data.rating) data.rating = Number(data.rating);
+    const testimonial = await Testimonial.findByIdAndUpdate(req.params.id, data, { new: true });
     if (!testimonial) return res.status(404).json({ message: 'Testimonial not found' });
     emitDashboardUpdate(req.app.get('io'));
     res.json(testimonial);

@@ -19,18 +19,19 @@ const services = [
   { number: '06', title: 'Cloud Deployment', desc: 'CI/CD pipelines, cloud infrastructure setup, monitoring, and optimization on AWS, Azure, and DigitalOcean.', icon: '☁️' },
 ];
 
-const testimonials = [
-  { name: 'Ahmed Khan', company: 'TechVentures Pakistan', photo: '', review: 'OwnTechSolutions delivered our e-commerce platform ahead of schedule. The MERN stack implementation was flawless and the UI/UX design exceeded our expectations.', rating: 5 },
-  { name: 'Sarah Ahmed', company: 'Digital Pulse', photo: '', review: 'Professional team with deep technical expertise. They transformed our legacy system into a modern, scalable application. Highly recommended!', rating: 5 },
-  { name: 'Usman Ali', company: 'InnovateTech', photo: '', review: 'The mobile app they built for us using Flutter is amazing. Cross-platform performance is outstanding and the team was very responsive throughout.', rating: 5 },
-  { name: 'Fatima Zafar', company: 'CloudBase Solutions', photo: '', review: 'Outstanding enterprise solution development. Their ASP.NET expertise helped us build a robust system that handles millions of transactions daily.', rating: 5 },
-  { name: 'Hassan Raza', company: 'WebCraft Agency', photo: '', review: 'Best UI/UX design team we have worked with. They understood our vision perfectly and created an interface that our users love.', rating: 4 },
-];
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 function Home() {
   const [contactSuccess, setContactSuccess] = useState('');
   const [selectedService, setSelectedService] = useState(null);
+  const [testimonials, setTestimonials] = useState([]);
   const { register, handleSubmit, formState: { errors }, reset } = useForm();
+
+  useEffect(() => {
+    axios.get(`${API_URL}/api/testimonials`).then((res) => {
+      if (res.data) setTestimonials(res.data);
+    }).catch(() => {});
+  }, []);
 
   const onSubmit = async (data) => {
     try {
@@ -198,43 +199,56 @@ function Home() {
       </section>
 
 
-
       <section className="relative py-16 md:py-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12 md:mb-16">
             <h2 className="section-title">What Our Clients Say</h2>
             <p className="section-subtitle !text-gray-300">Trusted by businesses across Pakistan to deliver exceptional digital solutions</p>
           </motion.div>
-          <Swiper
-            modules={[Autoplay, Pagination]}
-            spaceBetween={30}
-            slidesPerView={1}
-            breakpoints={{ 768: { slidesPerView: 2 }, 1024: { slidesPerView: 3 } }}
-            autoplay={{ delay: 4000, disableOnInteraction: false }}
-            pagination={{ clickable: true, bulletActiveClass: 'swiper-pagination-bullet-active !bg-primary' }}
-            className="pb-14"
-          >
-            {testimonials.map((t, i) => (
-              <SwiperSlide key={i}>
-                <div className="card h-full group hover:border-primary/30 transition-all duration-500">
-                  <FaQuoteLeft className="text-3xl text-primary/20 mb-4" />
-                  <p className="text-gray-300 mb-6 leading-relaxed line-clamp-4">"{t.review}"</p>
-                  <div className="flex gap-1 mb-4">
-                    {Array.from({ length: 5 }).map((_, j) => (
-                      <FaStar key={j} className={j < t.rating ? 'text-yellow-500' : 'text-gray-600'} size={14} />
-                    ))}
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-full gradient-bg flex items-center justify-center font-bold text-lg">{t.name[0]}</div>
-                    <div>
-                      <p className="font-semibold text-sm">{t.name}</p>
-                      <p className="text-gray-400 text-xs">{t.company}</p>
+          {testimonials.length === 0 ? (
+            <div className="text-center py-12 text-white/30">No testimonials yet.</div>
+          ) : (
+            <Swiper
+              modules={[Autoplay, Pagination]}
+              spaceBetween={24}
+              slidesPerView={1}
+              breakpoints={{ 640: { slidesPerView: 2 }, 1024: { slidesPerView: 3 } }}
+              autoplay={{ delay: 4000, disableOnInteraction: false }}
+              pagination={{ clickable: true, bulletActiveClass: 'swiper-pagination-bullet-active !bg-primary' }}
+              className="pb-14"
+            >
+              {testimonials.map((t, i) => (
+                <SwiperSlide key={t._id || i}>
+                  <div className="card h-full group hover:border-primary/30 transition-all duration-500 flex flex-col">
+                    <div className="flex items-center gap-4 mb-5">
+                      <div className="w-14 h-14 md:w-16 md:h-16 rounded-full overflow-hidden shrink-0 bg-gradient-to-br from-primary/30 to-purple-900/30 ring-2 ring-primary/20 group-hover:ring-primary/40 transition-all">
+                        {t.photo ? (
+                          <img src={t.photo} alt={t.clientName} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-xl font-bold text-primary">
+                            {t.clientName[0]}
+                          </div>
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-semibold text-sm md:text-base text-white truncate">{t.clientName}</p>
+                        <p className="text-gray-400 text-xs md:text-sm truncate">{t.position ? `${t.position}, ` : ''}{t.company}</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-1 mb-4">
+                      {Array.from({ length: 5 }).map((_, j) => (
+                        <FaStar key={j} className={j < t.rating ? 'text-yellow-500' : 'text-gray-600'} size={13} />
+                      ))}
+                    </div>
+                    <div className="relative flex-1">
+                      <FaQuoteLeft className="absolute -top-1 -left-1 text-2xl text-primary/10" />
+                      <p className="text-gray-300 text-sm md:text-base leading-relaxed line-clamp-4 pl-5">"{t.review}"</p>
                     </div>
                   </div>
-                </div>
-              </SwiperSlide>
-            ))}
-          </Swiper>
+                </SwiperSlide>
+              ))}
+            </Swiper>
+          )}
         </div>
       </section>
 
