@@ -2,22 +2,35 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiLogOut, FiFolder, FiMail, FiBarChart2, FiHelpCircle, FiStar, FiMenu, FiX, FiGrid, FiChevronLeft, FiMessageSquare, FiThumbsUp, FiUsers, FiBell } from 'react-icons/fi';
+import { FaRocket, FaComments, FaProjectDiagram, FaCogs, FaRegSmile, FaEnvelope, FaUsers, FaQuestionCircle, FaStar } from 'react-icons/fa';
 import { useQuery } from '@tanstack/react-query';
 import { io } from 'socket.io-client';
 import { useAuth, API } from '../context/AuthContext';
 
 const SOCKET_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
+const iconColors = [
+  'from-cyan-400 to-blue-500',
+  'from-green-400 to-emerald-500',
+  'from-violet-400 to-purple-500',
+  'from-pink-400 to-rose-500',
+  'from-amber-400 to-orange-500',
+  'from-teal-400 to-cyan-500',
+  'from-indigo-400 to-blue-600',
+  'from-fuchsia-400 to-pink-500',
+  'from-yellow-400 to-amber-500',
+];
+
 const adminLinks = [
-  { path: '/admin/dashboard', label: 'Dashboard', icon: FiBarChart2 },
-  { path: '/admin/chat', label: 'Live Chat', icon: FiMessageSquare },
-  { path: '/admin/projects', label: 'Projects', icon: FiFolder },
-  { path: '/admin/services', label: 'Services', icon: FiGrid },
-  { path: '/admin/feedback', label: 'Feedback', icon: FiThumbsUp },
-  { path: '/admin/contacts', label: 'Contacts', icon: FiMail },
-  { path: '/admin/users', label: 'Users', icon: FiUsers },
-  { path: '/admin/faqs', label: 'FAQs', icon: FiHelpCircle },
-  { path: '/admin/testimonials', label: 'Testimonials', icon: FiStar },
+  { path: '/admin/dashboard', label: 'Dashboard', icon: FaRocket, color: iconColors[0] },
+  { path: '/admin/chat', label: 'Live Chat', icon: FaComments, color: iconColors[1] },
+  { path: '/admin/projects', label: 'Projects', icon: FaProjectDiagram, color: iconColors[2] },
+  { path: '/admin/services', label: 'Services', icon: FaCogs, color: iconColors[3] },
+  { path: '/admin/feedback', label: 'Feedback', icon: FaRegSmile, color: iconColors[4] },
+  { path: '/admin/contacts', label: 'Contacts', icon: FaEnvelope, color: iconColors[5] },
+  { path: '/admin/users', label: 'Users', icon: FaUsers, color: iconColors[6] },
+  { path: '/admin/faqs', label: 'FAQs', icon: FaQuestionCircle, color: iconColors[7] },
+  { path: '/admin/testimonials', label: 'Testimonials', icon: FaStar, color: iconColors[8] },
 ];
 
 const sidebarVariants = {
@@ -156,13 +169,19 @@ export default function AdminLayout({ children, title }) {
                 <Link
                   to={link.path}
                   onClick={() => { if (isMobile) setSidebarOpen(false); }}
-                  className={`relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+                  className={`relative group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                     isActive
                       ? 'bg-primary/15 border border-primary/30 text-white shadow-[0_0_15px_rgba(139,92,246,0.15)]'
                       : 'text-white/70 hover:text-white hover:bg-primary/10 border border-transparent hover:border-primary/20'
                   }`}
                 >
-                  <link.icon size={18} />
+                  <motion.div
+                    whileHover={{ rotate: [0, -10, 10, -5, 0], scale: 1.2 }}
+                    transition={{ duration: 0.4 }}
+                    className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 bg-gradient-to-br ${link.color} bg-opacity-20 ${isActive ? 'shadow-lg shadow-purple-500/30' : 'opacity-80 group-hover:opacity-100'}`}
+                  >
+                    <link.icon size={16} className="text-white" />
+                  </motion.div>
                   <span className="text-sm font-medium">{link.label}</span>
                   {isActive && (
                     <motion.div
