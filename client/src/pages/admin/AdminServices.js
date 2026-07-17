@@ -20,7 +20,7 @@ const iconOptions = [
 
 const iconMap = Object.fromEntries(iconOptions.map(o => [o.value, o.icon]));
 
-const colorOptions = ['#8B5CF6', '#A78BFA', '#C084FC', '#6D28D9', '#7C3AED', '#9333EA', '#EC4899', '#F59E0B', '#10B981', '#3B82F6'];
+const colorOptions = ['#8B5CF6', '#A78BFA', '#C084FC', '#6D28D9', '#7C3AED', '#9333EA', '#F59E0B', '#10B981', '#3B82F6'];
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -98,11 +98,11 @@ export default function AdminServices() {
       </div>
 
       <div className="relative mb-10 overflow-hidden rounded-2xl">
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/40 via-violet-800/30 to-pink-900/40" />
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/40 via-violet-800/30 to-indigo-900/40" />
         <video autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover opacity-40">
           <source src="/videos/services-bg.mp4" type="video/mp4" />
         </video>
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, rgba(139,92,246,0.15), rgba(236,72,153,0.1))', backdropFilter: 'blur(2px)' }} />
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, rgba(139,92,246,0.15), rgba(99,102,241,0.1))', backdropFilter: 'blur(2px)' }} />
         <div className="relative z-10 px-8 py-14 text-center">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
             <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold tracking-wider uppercase mb-4" style={{ background: 'rgba(139,92,246,0.15)', border: '1px solid rgba(139,92,246,0.25)', color: '#C084FC' }}>
@@ -115,7 +115,7 @@ export default function AdminServices() {
               <span aria-hidden="true" className="absolute inset-0 flex items-center justify-center text-4xl md:text-5xl lg:text-6xl font-extrabold pointer-events-none select-none" style={{ color: 'rgba(139,92,246,0.5)', filter: 'blur(12px)', animation: 'glowPulse 3s ease-in-out infinite' }}>
                 Premium Development Services
               </span>
-              <span className="bg-clip-text text-transparent relative" style={{ backgroundImage: 'linear-gradient(90deg, #C084FC, #F9A8D4, #67E8F9, #C084FC)', backgroundSize: '300% 100%', animation: 'gradient 6s ease infinite' }}>
+              <span className="bg-clip-text text-transparent relative" style={{ backgroundImage: 'linear-gradient(90deg, #C084FC, #A78BFA, #67E8F9, #C084FC)', backgroundSize: '300% 100%', animation: 'gradient 6s ease infinite' }}>
                 Premium Development Services
               </span>
             </h1>
@@ -194,8 +194,7 @@ export default function AdminServices() {
           {services.map((service, i) => {
             const IconComp = iconMap[service.icon] || FiCode;
             return (
-              <motion.div key={service._id} variants={cardVariants} layout className="group relative overflow-visible">
-                <div className="absolute -inset-[1px] rounded-2xl bg-gradient-to-br from-purple-500/40 via-transparent to-pink-500/40 opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-500 pointer-events-none" />
+              <motion.div key={service._id} variants={cardVariants} layout className="group relative">
                 <div className="relative rounded-2xl overflow-hidden" style={{ background: `linear-gradient(135deg, ${service.color}12, ${service.color}06)`, border: `1px solid ${service.color}25`, boxShadow: `0 0 30px ${service.color}08, 0 4px 20px rgba(0,0,0,0.2)` }}>
                   <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: `linear-gradient(90deg, transparent, ${service.color}, transparent)` }} />
                   <div className="p-5">

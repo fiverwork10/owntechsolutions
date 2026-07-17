@@ -38,10 +38,18 @@ export default function About() {
       <section className="relative min-h-[60vh] flex items-center overflow-hidden mb-20">
         <ThreeBackground />
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="max-w-3xl">
-            <motion.span initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }} className="text-primary text-sm font-medium tracking-widest uppercase">About Us</motion.span>
-            <motion.h1 initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }} className="text-5xl md:text-7xl font-bold mt-4 mb-6">
-              We Build <span className="gradient-text">Digital Excellence</span>
+          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="max-w-4xl mx-auto text-center">
+            <motion.span initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }} className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold tracking-wider uppercase mb-4" style={{ background: 'rgba(139,92,246,0.15)', border: '1px solid rgba(139,92,246,0.25)', color: '#C084FC' }}>About Us</motion.span>
+            <motion.h1 initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }} className="text-6xl md:text-8xl font-bold mt-4 mb-6 relative flex items-center justify-center">
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="w-3/4 h-20 rounded-full" style={{ background: 'rgba(139,92,246,0.35)', filter: 'blur(50px)' }} />
+              </div>
+              <span aria-hidden="true" className="absolute text-6xl md:text-8xl font-bold pointer-events-none select-none" style={{ color: 'rgba(139,92,246,0.5)', filter: 'blur(12px)', animation: 'glowPulse 3s ease-in-out infinite' }}>
+                We Build Digital Excellence
+              </span>
+              <span className="bg-clip-text text-transparent" style={{ backgroundImage: 'linear-gradient(90deg, #C084FC, #A78BFA, #67E8F9, #C084FC)', backgroundSize: '300% 100%', animation: 'gradient 6s ease infinite' }}>
+                We Build Digital Excellence
+              </span>
             </motion.h1>
             <motion.p initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.3 }} className="text-xl text-text-secondary leading-relaxed">
               OwnTechSolutions is a professional software development agency based in Karachi, Pakistan. We specialize in MERN Stack Development, Flutter Mobile Development, ASP.NET Enterprise Solutions, UI/UX Design, and AI-Powered Applications.
@@ -77,7 +85,10 @@ export default function About() {
 
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-20">
         <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
-          <h2 className="section-title">Our Expertise</h2>
+          <h2 className="section-title relative">
+            <span aria-hidden="true" className="absolute inset-0 flex items-center justify-center text-5xl md:text-6xl lg:text-7xl font-bold pointer-events-none select-none" style={{ color: 'rgba(139,92,246,0.3)', filter: 'blur(8px)', animation: 'glowPulse 3s ease-in-out infinite' }}>Our Expertise</span>
+            <span className="relative">Our Expertise</span>
+          </h2>
           <p className="section-subtitle">Years of experience and continuous learning make us experts in our field</p>
         </motion.div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -107,7 +118,10 @@ export default function About() {
 
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-20">
         <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
-          <h2 className="section-title">Our Journey</h2>
+          <h2 className="section-title relative">
+            <span aria-hidden="true" className="absolute inset-0 flex items-center justify-center text-5xl md:text-6xl lg:text-7xl font-bold pointer-events-none select-none" style={{ color: 'rgba(139,92,246,0.3)', filter: 'blur(8px)', animation: 'glowPulse 3s ease-in-out infinite' }}>Our Journey</span>
+            <span className="relative">Our Journey</span>
+          </h2>
           <p className="section-subtitle">Milestones that shaped our growth and expertise</p>
         </motion.div>
         <div className="relative">

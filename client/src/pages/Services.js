@@ -149,10 +149,24 @@ export default function Services() {
     <div className="pt-32 pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-20">
-          <span className="text-primary text-sm font-medium tracking-widest uppercase">Our Services</span>
-          <h1 className="section-title mt-4">Premium Development Services</h1>
-          <p className="section-subtitle">
-            From concept to deployment, we provide end-to-end development services tailored to your business needs
+          <motion.span initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold tracking-wider uppercase mb-4" style={{ background: 'rgba(139,92,246,0.15)', border: '1px solid rgba(139,92,246,0.25)', color: '#C084FC' }}>
+            Our Services
+          </motion.span>
+          <h1 className="section-title mt-4 relative flex items-center justify-center">
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="w-3/4 h-16 rounded-full" style={{ background: 'rgba(139,92,246,0.35)', filter: 'blur(50px)' }} />
+            </div>
+            <span aria-hidden="true" className="absolute text-6xl md:text-7xl lg:text-8xl font-extrabold pointer-events-none select-none" style={{ color: 'rgba(139,92,246,0.5)', filter: 'blur(12px)', animation: 'glowPulse 3s ease-in-out infinite' }}>
+              Premium Development Services
+            </span>
+            <span className="bg-clip-text text-transparent text-6xl md:text-7xl lg:text-8xl" style={{ backgroundImage: 'linear-gradient(90deg, #C084FC, #A78BFA, #67E8F9, #C084FC)', backgroundSize: '300% 100%', animation: 'gradient 6s ease infinite' }}>
+              Premium Development Services
+            </span>
+          </h1>
+          <p className="section-subtitle relative" style={{ animation: 'glowPulse 4s ease-in-out infinite' }}>
+            <span style={{ textShadow: '0 0 30px rgba(139,92,246,0.3), 0 0 60px rgba(139,92,246,0.15)' }}>
+              From concept to deployment, we provide end-to-end development services tailored to your business needs
+            </span>
           </p>
         </motion.div>
 
@@ -160,45 +174,56 @@ export default function Services() {
           {services.map((service, i) => {
             const IconComp = iconMap[service.icon] || FiCode;
             return (
-            <div
+            <motion.div
               key={i}
-              onClick={() => setSelectedService(service)}
               initial={{ opacity: 0, y: 40 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.08, duration: 0.5 }}
-              className="group relative card overflow-hidden cursor-pointer"
+              onClick={() => setSelectedService(service)}
+              className="group relative cursor-pointer"
             >
-              <div className="absolute top-0 right-0 w-64 h-64 opacity-[0.04] rounded-full blur-[100px]" style={{ background: service.color }} />
-              <div className="relative z-10">
-                <div className="flex items-start justify-between mb-6">
-                  <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: `${service.color}20`, border: `1px solid ${service.color}30` }}>
-                    <IconComp size={28} style={{ color: service.color }} />
+              <div className="absolute -inset-[1px] rounded-2xl bg-gradient-to-br from-purple-500/30 via-transparent to-purple-500/15 opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-500 pointer-events-none" />
+              <div className="relative rounded-2xl overflow-hidden" style={{ background: `linear-gradient(135deg, ${service.color}10, ${service.color}05)`, border: `1px solid ${service.color}20`, boxShadow: `0 0 30px ${service.color}06, 0 4px 20px rgba(0,0,0,0.15)` }}>
+                <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: `linear-gradient(90deg, transparent, ${service.color}, transparent)` }} />
+                <div className="p-8">
+                  <div className="flex items-start justify-between mb-6">
+                    <div className="w-14 h-14 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300" style={{ background: `${service.color}20`, border: `1px solid ${service.color}30` }}>
+                      <IconComp size={28} style={{ color: service.color }} />
+                    </div>
+                    <span className="text-2xl font-bold gradient-text">{service.price}</span>
                   </div>
-                  <span className="text-2xl font-bold gradient-text">{service.price}</span>
-                </div>
-                <h2 className="text-2xl font-bold mb-3 group-hover:text-primary transition-colors">{service.title}</h2>
-                <p className="text-text-secondary mb-6">{service.description}</p>
-                <div className="mb-6">
-                  <p className="text-sm font-semibold text-primary mb-3">Features:</p>
-                  <div className="grid grid-cols-2 gap-2">
-                    {service.features.map((f, j) => (
-                      <div key={j} className="flex items-center gap-2 text-sm text-text-secondary">
-                        <FiCheck className="text-primary shrink-0" size={14} />
-                        {f}
-                      </div>
+                  <h2 className="text-2xl font-bold mb-3 group-hover:text-primary transition-colors">{service.title}</h2>
+                  <p className="text-text-secondary mb-6 leading-relaxed">{service.description}</p>
+                  <div className="mb-6">
+                    <p className="text-sm font-semibold text-primary mb-3">Features:</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {service.features.map((f, j) => (
+                        <div key={j} className="flex items-center gap-2 text-sm text-text-secondary">
+                          <span className="w-4 h-4 rounded-full flex items-center justify-center shrink-0" style={{ background: `${service.color}20`, color: service.color }}>
+                            <FiCheck size={10} />
+                          </span>
+                          {f}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {service.technologies.map((tech, j) => (
+                      <span key={j} className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all group-hover:scale-105" style={{ background: `${service.color}15`, color: service.color, border: `1px solid ${service.color}25` }}>
+                        {tech}
+                      </span>
                     ))}
                   </div>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {service.technologies.map((tech, j) => (
-                    <span key={j} className="px-3 py-1 rounded-lg text-xs font-medium" style={{ background: `${service.color}15`, color: service.color, border: `1px solid ${service.color}25` }}>
-                      {tech}
+                  <div className="mt-6 pt-5 border-t border-white/5 flex items-center justify-between">
+                    <span className="text-xs text-white/30">Click to view details</span>
+                    <span className="text-sm text-white/40 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      Learn More <FiArrowRight size={12} />
                     </span>
-                  ))}
+                  </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           );})}
         </div>
 

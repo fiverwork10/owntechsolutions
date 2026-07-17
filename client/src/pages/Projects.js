@@ -37,10 +37,12 @@ function ProjectCard3D({ project, index, onClick, views }) {
       animate={inView ? { opacity: 1, rotateX: 0, y: 0, z: 0 } : {}}
       transition={{ delay: index * 0.08, duration: 0.6, type: 'spring', stiffness: 100, damping: 20 }}
       style={{ perspective: '1000px', transformStyle: 'preserve-3d' }}
-      className="card group cursor-pointer overflow-hidden"
+      className="group cursor-pointer rounded-2xl overflow-hidden"
       onClick={onClick}
     >
-      <div className="relative h-48 rounded-xl overflow-hidden mb-4 bg-background-card">
+      <div className="absolute -inset-[1px] rounded-2xl bg-gradient-to-br from-purple-500/20 via-transparent to-purple-500/10 opacity-0 group-hover:opacity-100 blur-lg transition-opacity duration-500 pointer-events-none" />
+      <div className="relative rounded-2xl overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(139,92,246,0.06), transparent)', border: '1px solid rgba(139,92,246,0.35)', boxShadow: '0 0 20px rgba(139,92,246,0.08)' }}>
+      <div className="relative h-48 rounded-2xl overflow-hidden mb-4" style={{ background: 'rgba(139,92,246,0.05)' }}>
         {project.images?.[0] ? (
           <img src={getFileUrl(project.images[0].url)} alt={project.title}
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
@@ -55,17 +57,20 @@ function ProjectCard3D({ project, index, onClick, views }) {
           {categoryLabels[project.category] || project.category}
         </span>
       </div>
-      <h3 className="text-lg font-bold mb-2 group-hover:text-primary transition-colors line-clamp-1">{project.title}</h3>
-      <p className="text-text-secondary text-sm line-clamp-2 mb-3">{project.description}</p>
-      <p className="text-text-muted text-xs mb-2 flex items-center gap-1.5"><FiEye size={12} /> <AnimatedCounter value={views} /> views</p>
+      <div className="p-4">
+      <h3 className="text-lg font-bold text-white mb-2 group-hover:text-primary transition-colors line-clamp-1">{project.title}</h3>
+      <p className="text-white/70 text-sm line-clamp-2 mb-3">{project.description}</p>
+      <p className="text-white/50 text-xs mb-2 flex items-center gap-1.5"><FiEye size={12} /> <AnimatedCounter value={views} /> views</p>
       {project.tags?.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
           {project.tags.slice(0, 3).map((tag, j) => (
-            <span key={j} className="px-2 py-0.5 rounded-md text-xs glass text-text-muted">{tag}</span>
+            <span key={j} className="px-2 py-0.5 rounded-md text-xs text-white/50 glass">{tag}</span>
           ))}
-          {project.tags.length > 3 && <span className="text-xs text-text-muted">+{project.tags.length - 3}</span>}
+          {project.tags.length > 3 && <span className="text-xs text-white/50">+{project.tags.length - 3}</span>}
         </div>
       )}
+      </div>
+      </div>
     </motion.div>
   );
 }
@@ -82,12 +87,14 @@ function VideoCard3D({ video, index, onClick, views }) {
       animate={inView ? { opacity: 1, rotateX: 0, y: 0, z: 0 } : {}}
       transition={{ delay: index * 0.08, duration: 0.6, type: 'spring', stiffness: 100, damping: 20 }}
       style={{ perspective: '1000px', transformStyle: 'preserve-3d' }}
-      className="card group cursor-pointer overflow-hidden"
+      className="group cursor-pointer rounded-2xl overflow-hidden"
       onClick={onClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      <div className="relative h-48 rounded-xl overflow-hidden mb-4 bg-black flex items-center justify-center">
+      <div className="absolute -inset-[1px] rounded-2xl bg-gradient-to-br from-purple-500/20 via-transparent to-purple-500/10 opacity-0 group-hover:opacity-100 blur-lg transition-opacity duration-500 pointer-events-none" />
+      <div className="relative rounded-2xl overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(139,92,246,0.06), transparent)', border: '1px solid rgba(139,92,246,0.35)', boxShadow: '0 0 20px rgba(139,92,246,0.08)' }}>
+      <div className="relative h-48 rounded-2xl overflow-hidden mb-4 bg-black flex items-center justify-center">
         <video src={getFileUrl(video.url)} className="w-full h-full object-cover" muted
           ref={(el) => { if (el) hovered ? el.play().catch(() => {}) : (el.pause(), el.currentTime = 0); }} />
         <div className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${hovered ? 'bg-black/40' : 'bg-black/30'}`}>
@@ -103,17 +110,20 @@ function VideoCard3D({ video, index, onClick, views }) {
           </span>
         )}
       </div>
-      <h3 className="text-lg font-bold mb-2 group-hover:text-primary transition-colors line-clamp-1">{video.title}</h3>
-      <p className="text-text-muted text-xs mb-2 flex items-center gap-1.5"><FiEye size={12} /> <AnimatedCounter value={views} /> views</p>
-      <p className="text-text-secondary text-sm line-clamp-2 mb-3">{video.description || 'No description'}</p>
+      <div className="p-4">
+      <h3 className="text-lg font-bold text-white mb-2 group-hover:text-primary transition-colors line-clamp-1">{video.title}</h3>
+      <p className="text-white/50 text-xs mb-2 flex items-center gap-1.5"><FiEye size={12} /> <AnimatedCounter value={views} /> views</p>
+      <p className="text-white/70 text-sm line-clamp-2 mb-3">{video.description || 'No description'}</p>
       {video.tags?.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
           {video.tags.slice(0, 3).map((tag, j) => (
-            <span key={j} className="px-2 py-0.5 rounded-md text-xs glass text-text-muted">{tag}</span>
+            <span key={j} className="px-2 py-0.5 rounded-md text-xs text-white/50 glass">{tag}</span>
           ))}
-          {video.tags.length > 3 && <span className="text-xs text-text-muted">+{video.tags.length - 3}</span>}
+          {video.tags.length > 3 && <span className="text-xs text-white/50">+{video.tags.length - 3}</span>}
         </div>
       )}
+      </div>
+      </div>
     </motion.div>
   );
 }
@@ -125,18 +135,30 @@ export default function Projects() {
     <div className="pt-32 pb-20 min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-12">
-          <span className="text-primary text-sm font-medium tracking-widest uppercase">Our Portfolio</span>
-          <h1 className="section-title mt-4">Featured Projects</h1>
+          <motion.span initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold tracking-wider uppercase mb-4" style={{ background: 'rgba(139,92,246,0.15)', border: '1px solid rgba(139,92,246,0.25)', color: '#C084FC' }}>Our Portfolio</motion.span>
+          <h1 className="section-title mt-4 relative flex items-center justify-center">
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="w-3/4 h-16 rounded-full" style={{ background: 'rgba(139,92,246,0.35)', filter: 'blur(50px)' }} />
+            </div>
+            <span aria-hidden="true" className="absolute text-6xl md:text-7xl lg:text-8xl font-extrabold pointer-events-none select-none" style={{ color: 'rgba(139,92,246,0.5)', filter: 'blur(12px)', animation: 'glowPulse 3s ease-in-out infinite' }}>
+              Featured Projects
+            </span>
+            <span className="bg-clip-text text-transparent text-6xl md:text-7xl lg:text-8xl" style={{ backgroundImage: 'linear-gradient(90deg, #C084FC, #A78BFA, #67E8F9, #C084FC)', backgroundSize: '300% 100%', animation: 'gradient 6s ease infinite' }}>
+              Featured Projects
+            </span>
+          </h1>
           <p className="section-subtitle">Showcasing our best work across various technologies and industries</p>
         </motion.div>
 
         <div className="flex items-center gap-2 mb-8 justify-center">
           <button onClick={() => setActiveView('projects')}
-            className={`px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${activeView === 'projects' ? 'bg-primary text-white shadow-neon' : 'glass text-text-secondary hover:text-white'}`}>
+            className={`px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${activeView === 'projects' ? 'text-white' : 'glass text-text-secondary hover:text-white'}`}
+            style={activeView === 'projects' ? { background: 'linear-gradient(135deg, rgba(139,92,246,0.3), rgba(139,92,246,0.15))', border: '1px solid rgba(139,92,246,0.4)', boxShadow: '0 0 20px rgba(139,92,246,0.2)' } : {}}>
             <FiImage className="inline mr-1.5" size={16} /> Projects
           </button>
           <button onClick={() => setActiveView('videos')}
-            className={`px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${activeView === 'videos' ? 'bg-primary text-white shadow-neon' : 'glass text-text-secondary hover:text-white'}`}>
+            className={`px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${activeView === 'videos' ? 'text-white' : 'glass text-text-secondary hover:text-white'}`}
+            style={activeView === 'videos' ? { background: 'linear-gradient(135deg, rgba(139,92,246,0.3), rgba(139,92,246,0.15))', border: '1px solid rgba(139,92,246,0.4)', boxShadow: '0 0 20px rgba(139,92,246,0.2)' } : {}}>
             <FiVideo className="inline mr-1.5" size={16} /> Videos
           </button>
         </div>
@@ -250,25 +272,26 @@ function ProjectsView() {
 
   return (
     <>
-      <div className="flex flex-col md:flex-row gap-4 mb-10">
-        <div className="relative flex-1">
-          <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" />
-          <input type="text" value={search} onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search projects..." className="input-field pl-12" />
-        </div>
-        <div className="flex gap-2 flex-wrap">
-          {categories.map((cat) => (
-            <button key={cat} onClick={() => setActiveCategory(cat)}
-              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                activeCategory === cat
-                  ? 'bg-primary text-white shadow-neon'
-                  : 'glass text-text-secondary hover:text-white hover:bg-primary/10'
-              }`}>
-              {categoryLabels[cat]}
-            </button>
-          ))}
-        </div>
-      </div>
+      <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="flex flex-col md:flex-row gap-4 mb-10">
+          <div className="relative flex-1">
+            <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-purple-400" />
+            <input type="text" value={search} onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search projects..." className="input-field pl-12" style={{ border: '1px solid rgba(139,92,246,0.4)', boxShadow: '0 0 20px rgba(139,92,246,0.12)', borderRadius: '0.75rem' }} />
+          </div>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }} className="flex gap-2 flex-wrap">
+            {categories.map((cat) => (
+              <motion.button key={cat} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => setActiveCategory(cat)}
+                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                  activeCategory === cat
+                    ? 'text-white'
+                    : 'glass text-text-secondary hover:text-white'
+                }`}
+                style={activeCategory === cat ? { background: 'linear-gradient(135deg, rgba(139,92,246,0.45), rgba(139,92,246,0.25))', border: '1px solid rgba(139,92,246,0.55)', boxShadow: '0 0 25px rgba(139,92,246,0.25)' } : {}}>
+                {categoryLabels[cat]}
+              </motion.button>
+            ))}
+          </motion.div>
+        </motion.div>
 
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -614,25 +637,26 @@ function VideosView() {
 
   return (
     <>
-      <div className="flex flex-col md:flex-row gap-4 mb-10">
-        <div className="relative flex-1">
-          <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" />
-          <input type="text" value={search} onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search videos..." className="input-field pl-12" />
-        </div>
-        <div className="flex gap-2 flex-wrap">
-          {categories.map((cat) => (
-            <button key={cat} onClick={() => setActiveCategory(cat)}
-              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                activeCategory === cat
-                  ? 'bg-primary text-white shadow-neon'
-                  : 'glass text-text-secondary hover:text-white hover:bg-primary/10'
-              }`}>
-              {cat === 'all' ? 'All Videos' : categoryLabels[cat]}
-            </button>
-          ))}
-        </div>
-      </div>
+      <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="flex flex-col md:flex-row gap-4 mb-10">
+          <div className="relative flex-1">
+            <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-purple-400" />
+            <input type="text" value={search} onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search videos..." className="input-field pl-12" style={{ border: '1px solid rgba(139,92,246,0.4)', boxShadow: '0 0 20px rgba(139,92,246,0.12)', borderRadius: '0.75rem' }} />
+          </div>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }} className="flex gap-2 flex-wrap">
+            {categories.map((cat) => (
+              <motion.button key={cat} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => setActiveCategory(cat)}
+                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                  activeCategory === cat
+                    ? 'text-white'
+                    : 'glass text-text-secondary hover:text-white'
+                }`}
+                style={activeCategory === cat ? { background: 'linear-gradient(135deg, rgba(139,92,246,0.45), rgba(139,92,246,0.25))', border: '1px solid rgba(139,92,246,0.55)', boxShadow: '0 0 25px rgba(139,92,246,0.25)' } : {}}>
+                {cat === 'all' ? 'All Videos' : categoryLabels[cat]}
+              </motion.button>
+            ))}
+          </motion.div>
+        </motion.div>
 
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
