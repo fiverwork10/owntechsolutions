@@ -209,9 +209,16 @@ export default function AdminLayout({ children, title }) {
           <motion.button
             onClick={handleLogout}
             whileHover={{ x: 4 }}
-            className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-white/70 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200"
+            className="group flex items-center gap-3 w-full px-4 py-3 rounded-xl text-white/70 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200"
           >
-            <FiLogOut size={18} /> <span className="text-sm">Logout</span>
+            <motion.div
+              whileHover={{ rotate: [0, -15, 15, -10, 0], scale: 1.15 }}
+              transition={{ duration: 0.5 }}
+              className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 bg-gradient-to-br from-red-400 to-rose-600 opacity-80 group-hover:opacity-100"
+            >
+              <FiLogOut size={16} className="text-white" />
+            </motion.div>
+            <span className="text-sm">Logout</span>
           </motion.button>
         </div>
       </motion.aside>
