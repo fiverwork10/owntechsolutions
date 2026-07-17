@@ -65,11 +65,11 @@ export default function AdminProjects() {
     <AdminLayout title={activeTab === 'projects' ? `Projects (Admin)` : `Videos (Admin)`}>
       <div className="flex items-center gap-2 mb-6">
         <button onClick={() => setActiveTab('projects')}
-          className={`px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${activeTab === 'projects' ? 'bg-primary text-white shadow-neon' : 'glass text-text-secondary hover:text-white'}`}>
+          className={`px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${activeTab === 'projects' ? 'btn-primary !py-2.5 !px-5' : 'glass text-text-secondary hover:text-white'}`}>
           <FiImage className="inline mr-1.5" size={16} /> Projects
         </button>
         <button onClick={() => setActiveTab('videos')}
-          className={`px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${activeTab === 'videos' ? 'bg-primary text-white shadow-neon' : 'glass text-text-secondary hover:text-white'}`}>
+          className={`px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${activeTab === 'videos' ? 'btn-primary !py-2.5 !px-5' : 'glass text-text-secondary hover:text-white'}`}>
           <FiVideo className="inline mr-1.5" size={16} /> Videos
         </button>
       </div>
@@ -240,7 +240,7 @@ function ProjectsSection({ API }) {
     <>
       <div className="flex items-center justify-between mb-6">
         <div></div>
-        <button onClick={openNewForm} className="btn-primary !py-2 !px-4 !text-sm"><FiPlus /> New Project</button>
+        <button onClick={openNewForm} className="btn-cyan !py-2 !px-4 !text-sm btn-primary"><FiPlus /> New Project</button>
       </div>
 
       {feedback.show && (
@@ -253,7 +253,7 @@ function ProjectsSection({ API }) {
       )}
 
       {showForm && (
-        <motion.div initial={{ opacity: 0, scale: 0.9, y: -30 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: 'spring', stiffness: 250, damping: 22 }} className="card mb-8">
+        <motion.div initial={{ opacity: 0, scale: 0.9, y: -30 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: 'spring', stiffness: 250, damping: 22 }} className="card card-gradient card-glow mb-8">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-lg font-bold">{editing ? 'Edit Project' : 'New Project'}</h2>
             <button onClick={resetForm} className="w-8 h-8 rounded-lg glass flex items-center justify-center"><FiX /></button>
@@ -361,28 +361,29 @@ function ProjectsSection({ API }) {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {projects.map((project, i) => (
-            <motion.div key={project._id} initial={{ opacity: 0, scale: 0.85, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ delay: i * 0.05, type: 'spring', stiffness: 200, damping: 20 }} onClick={() => setSelectedProject(project)} className="card group overflow-hidden cursor-pointer">
+            <motion.div key={project._id} initial={{ opacity: 0, scale: 0.85, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ delay: i * 0.05, type: 'spring', stiffness: 200, damping: 20 }} onClick={() => setSelectedProject(project)} className="card card-gradient card-glow group overflow-hidden cursor-pointer">
               <div className="relative h-44 rounded-xl overflow-hidden mb-4 bg-background-card">
                 {project.images?.[0]?.url ? (
-                  <img src={getFileUrl(project.images[0].url)} alt={project.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onError={(e) => { e.target.style.display = 'none'; }} />
+                  <img src={getFileUrl(project.images[0].url)} alt={project.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" onError={(e) => { e.target.style.display = 'none'; }} />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center"><FiImage className="text-text-muted" size={36} /></div>
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-cyan-500/10"><FiImage className="text-primary/40" size={36} /></div>
                 )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 <div className="absolute top-3 right-3 flex gap-2">
-                  <span className={`px-2.5 py-1 rounded-lg text-xs font-medium ${
-                    project.isPublished ? 'bg-green-500/20 text-green-400 border border-green-500/20' : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/20'
+                  <span className={`px-2.5 py-1 rounded-lg text-xs font-medium backdrop-blur ${
+                    project.isPublished ? 'bg-green-500/30 text-green-300 border border-green-400/30 shadow-lg shadow-green-500/20' : 'bg-yellow-500/30 text-yellow-300 border border-yellow-400/30 shadow-lg shadow-yellow-500/20'
                   }`}>
                     {project.isPublished ? 'Published' : 'Draft'}
                   </span>
                 </div>
-                <span className="absolute top-3 left-3 px-2.5 py-1 rounded-lg text-xs font-medium glass text-white/80 capitalize">{project.category}</span>
+                <span className="absolute top-3 left-3 px-2.5 py-1 rounded-lg text-xs font-medium glass text-white/90 capitalize backdrop-blur border border-white/10">{project.category}</span>
                 {project.images?.length > 1 && (
-                  <span className="absolute bottom-3 right-3 px-2 py-0.5 rounded-md text-[10px] font-medium glass text-white/70">
+                  <span className="absolute bottom-3 right-3 px-2 py-0.5 rounded-md text-[10px] font-medium glass text-white/80 backdrop-blur">
                     +{project.images.length} photos
                   </span>
                 )}
               </div>
-              <h3 className="font-bold mb-1 line-clamp-1 group-hover:text-primary transition-colors">{project.title}</h3>
+              <h3 className="font-bold mb-1 line-clamp-1 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-primary group-hover:to-cyan-400 group-hover:bg-clip-text transition-all duration-300">{project.title}</h3>
               <p className="text-text-muted text-xs mb-2">
                 {project.name && <>{project.name} • </>}
                 {project.views || 0} views
@@ -397,7 +398,7 @@ function ProjectsSection({ API }) {
                 </div>
               )}
               <div className="flex items-center gap-2 pt-2 border-t border-glass-border">
-                <button onClick={(e) => { e.stopPropagation(); togglePublish(project._id); }} className="flex-1 p-2 rounded-lg glass hover:bg-primary/10 text-text-secondary hover:text-primary transition-all text-xs flex items-center justify-center gap-1.5">
+                <button onClick={(e) => { e.stopPropagation(); togglePublish(project._id); }} className="flex-1 p-2 rounded-lg glass hover:bg-primary/10 text-text-secondary hover:text-primary transition-all text-xs flex items-center justify-center gap-1.5 group">
                   {project.isPublished ? <><FiEyeOff size={14} /> Unpublish</> : <><FiEye size={14} /> Publish</>}
                 </button>
                 <button onClick={(e) => { e.stopPropagation(); openEditForm(project); }} className="p-2 rounded-lg glass hover:bg-blue-500/10 text-text-secondary hover:text-blue-400 transition-all"><FiEdit2 size={14} /></button>
@@ -414,7 +415,7 @@ function ProjectsSection({ API }) {
             onClick={() => setSelectedProject(null)}
           >
             <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
-              className="glass-strong rounded-3xl p-6 md:p-8 max-w-3xl w-full max-h-[85vh] overflow-y-auto"
+              className="glass-strong rounded-3xl p-6 md:p-8 max-w-3xl w-full max-h-[85vh] overflow-y-auto border border-primary/20"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex justify-between items-start mb-6">
@@ -429,7 +430,7 @@ function ProjectsSection({ API }) {
                       {selectedProject.isPublished ? 'Published' : 'Draft'}
                     </span>
                   </div>
-                  <h2 className="text-2xl font-bold truncate">{selectedProject.title}</h2>
+                  <h2 className="text-2xl font-bold bg-gradient-to-r from-white to-primary bg-clip-text text-transparent">{selectedProject.title}</h2>
                   {selectedProject.name && (<p className="text-sm text-white/50 mt-1">{selectedProject.name}</p>)}
                 </div>
                 <button onClick={() => setSelectedProject(null)}
@@ -443,7 +444,7 @@ function ProjectsSection({ API }) {
                   <Swiper modules={[Navigation, Pagination]} spaceBetween={8} slidesPerView={1}
                     navigation={{ prevEl: '.admin-swiper-prev', nextEl: '.admin-swiper-next' }}
                     pagination={{ clickable: true, bulletActiveClass: 'swiper-pagination-bullet-active !bg-primary' }}
-                    className="rounded-xl overflow-hidden">
+                    className="rounded-xl overflow-hidden ring-2 ring-primary/20">
                     {selectedProject.images.map((img, i) => (
                       <SwiperSlide key={i}>
                         <div className="relative h-64 md:h-80 rounded-xl overflow-hidden bg-background-card">
@@ -465,7 +466,7 @@ function ProjectsSection({ API }) {
 
               {selectedProject.tags?.length > 0 && (
                 <div className="mb-6">
-                  <p className="text-sm font-semibold text-primary mb-3">Tags:</p>
+                  <p className="text-sm font-semibold text-transparent bg-gradient-to-r from-primary to-cyan-400 bg-clip-text mb-3">Tags:</p>
                   <div className="flex flex-wrap gap-2">
                     {selectedProject.tags.map((tag, j) => (
                       <span key={j} className="px-3 py-1 rounded-lg text-xs font-medium glass text-text-secondary">{tag}</span>
@@ -484,7 +485,7 @@ function ProjectsSection({ API }) {
                   <>
                     {selectedProject.liveUrl && (
                       <a href={selectedProject.liveUrl} target="_blank" rel="noreferrer"
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary/20 border border-primary/30 text-white font-medium hover:bg-primary/30 transition-all text-sm">
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-primary/30 to-cyan-500/30 border border-primary/30 text-white font-medium hover:from-primary/40 hover:to-cyan-500/40 transition-all text-sm shadow-lg shadow-primary/20">
                         <FiExternalLink size={16} /> Live Demo
                       </a>
                     )}
@@ -497,7 +498,7 @@ function ProjectsSection({ API }) {
                   </>
                 )}
                 <button onClick={() => { setSelectedProject(null); openEditForm(selectedProject); }}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl glass text-blue-400 hover:bg-blue-500/10 transition-all text-sm ml-auto">
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl btn-blue btn-primary text-sm ml-auto">
                   <FiEdit2 size={16} /> Edit
                 </button>
               </div>
@@ -658,7 +659,7 @@ function VideosSection({ API }) {
     <>
       <div className="flex items-center justify-between mb-6">
         <p className="text-sm text-text-secondary">{videos.length} video{videos.length !== 1 ? 's' : ''}</p>
-        <button onClick={openNewForm} className="btn-primary !py-2 !px-4 !text-sm"><FiPlus /> Add Video</button>
+        <button onClick={openNewForm} className="btn-pink !py-2 !px-4 !text-sm btn-primary"><FiPlus /> Add Video</button>
       </div>
 
       {feedback.show && (
@@ -671,7 +672,7 @@ function VideosSection({ API }) {
       )}
 
       {showForm && (
-        <motion.div initial={{ opacity: 0, scale: 0.9, y: -30 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: 'spring', stiffness: 250, damping: 22 }} className="card mb-8">
+        <motion.div initial={{ opacity: 0, scale: 0.9, y: -30 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: 'spring', stiffness: 250, damping: 22 }} className="card card-gradient card-glow mb-8">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-lg font-bold">{editing ? 'Edit Video' : 'Add New Video'}</h2>
             <button onClick={resetForm} className="w-8 h-8 rounded-lg glass flex items-center justify-center"><FiX /></button>
@@ -733,26 +734,26 @@ function VideosSection({ API }) {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {videos.map((video, i) => (
             <motion.div key={video._id} initial={{ opacity: 0, scale: 0.85, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ delay: i * 0.05, type: 'spring', stiffness: 200, damping: 20 }}
-              className="card group overflow-hidden cursor-pointer" onClick={() => setSelectedVideo(video)}>
+              className="card card-gradient card-glow group overflow-hidden cursor-pointer" onClick={() => setSelectedVideo(video)}>
               <div className="relative h-44 rounded-xl overflow-hidden mb-4 bg-black flex items-center justify-center">
                 <video src={getFileUrl(video.url)} className="w-full h-full object-cover" muted
                   onMouseEnter={(e) => e.target.play().catch(() => {})}
                   onMouseLeave={(e) => { e.target.pause(); e.target.currentTime = 0; }} />
-                <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                  <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur flex items-center justify-center">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-center justify-center">
+                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-pink-500/40 to-purple-500/40 backdrop-blur flex items-center justify-center border border-white/20 shadow-lg shadow-pink-500/20">
                     <FiVideo size={24} className="text-white ml-1" />
                   </div>
                 </div>
                 <div className="absolute top-3 right-3 flex gap-2">
-                  <span className={`px-2.5 py-1 rounded-lg text-xs font-medium ${
-                    video.isPublished ? 'bg-green-500/20 text-green-400 border border-green-500/20' : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/20'
+                  <span className={`px-2.5 py-1 rounded-lg text-xs font-medium backdrop-blur ${
+                    video.isPublished ? 'bg-green-500/30 text-green-300 border border-green-400/30 shadow-lg shadow-green-500/20' : 'bg-yellow-500/30 text-yellow-300 border border-yellow-400/30 shadow-lg shadow-yellow-500/20'
                   }`}>
                     {video.isPublished ? 'Published' : 'Draft'}
                   </span>
                 </div>
-                <span className="absolute top-3 left-3 px-2.5 py-1 rounded-lg text-xs font-medium glass text-white/80 capitalize">{video.category}</span>
+                <span className="absolute top-3 left-3 px-2.5 py-1 rounded-lg text-xs font-medium glass text-white/90 capitalize backdrop-blur border border-white/10">{video.category}</span>
               </div>
-              <h3 className="font-bold mb-1 line-clamp-1 group-hover:text-primary transition-colors">{video.title}</h3>
+              <h3 className="font-bold mb-1 line-clamp-1 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-pink-400 group-hover:to-purple-500 group-hover:bg-clip-text transition-all duration-300">{video.title}</h3>
               <p className="text-text-muted text-xs mb-2">{video.views || 0} views</p>
               <p className="text-text-secondary text-sm line-clamp-2 mb-4 min-h-[2.5rem]">{video.description || 'No description'}</p>
               {video.tags?.length > 0 && (

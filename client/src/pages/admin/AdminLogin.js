@@ -79,7 +79,7 @@ export default function AdminLogin() {
               </button>
             </div>
           </div>
-          <button type="submit" disabled={loading} className="btn-primary w-full !py-3.5">
+          <button type="submit" disabled={loading} className="btn-primary w-full !py-3.5 btn-cyan">
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>

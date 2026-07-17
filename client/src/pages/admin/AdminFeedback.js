@@ -95,7 +95,7 @@ export default function AdminFeedback() {
   return (
     <AdminLayout title="Feedback Analytics">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <StatCard icon={FiMessageSquare} label="Total Feedback" value={data?.totalFeedback || 0} color={COLORS.blue} />
+        <StatCard icon={FiMessageSquare} label="Total Feedback" value={data?.totalFeedback || 0} color="#3B82F6" />
         <StatCard
           icon={FiStar}
           label="Average Rating"
@@ -113,7 +113,7 @@ export default function AdminFeedback() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <div className="card">
+        <div className="card card-gradient card-glow">
           <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
             <FiStar className="text-amber-400" /> Rating Distribution
           </h2>
@@ -143,7 +143,7 @@ export default function AdminFeedback() {
           )}
         </div>
 
-        <div className="card">
+        <div className="card card-gradient card-glow">
           <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
             <FiThumbsUp className="text-green-400" /> Most Rated Projects
           </h2>
@@ -175,7 +175,7 @@ export default function AdminFeedback() {
         </div>
       </div>
 
-      <div className="card">
+      <div className="card card-gradient card-glow">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold text-white flex items-center gap-2">
             <FiMessageSquare className="text-primary" /> All Feedback

@@ -80,12 +80,12 @@ export default function AdminContacts() {
                   onClick={() => selectContact(contact)}
                   className={`group rounded-xl p-3 cursor-pointer transition-all duration-200 border ${
                     selectedContact?._id === contact._id
-                      ? 'bg-primary/15 border-primary/30 shadow-[0_0_15px_rgba(139,92,246,0.12)]'
-                      : contact.isRead ? 'bg-background-card/30 border-transparent hover:bg-primary/8 hover:border-primary/20' : 'bg-primary/5 border-primary/20 hover:bg-primary/10 hover:border-primary/30'
+                      ? 'bg-gradient-to-r from-primary/20 to-purple-500/10 border-primary/30 shadow-[0_0_20px_rgba(139,92,246,0.2)]'
+                      : contact.isRead ? 'bg-background-card/30 border-transparent hover:bg-primary/8 hover:border-primary/20' : 'bg-gradient-to-r from-primary/10 to-purple-500/5 border-primary/20 hover:bg-primary/10 hover:border-primary/30'
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="relative w-9 h-9 md:w-10 md:h-10 rounded-xl gradient-bg flex items-center justify-center font-bold text-xs md:text-sm shrink-0 shadow-lg shadow-primary/20">
+                    <div className="relative w-9 h-9 md:w-10 md:h-10 rounded-xl bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center font-bold text-xs md:text-sm shrink-0 shadow-lg shadow-primary/30">
                       {contact.name?.[0]}
                       {!contact.isRead && <span className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-primary border-2 border-background shadow-[0_0_8px_rgba(139,92,246,0.6)]" />}
                     </div>
@@ -159,7 +159,7 @@ export default function AdminContacts() {
                 {!selectedContact.isReplied && (
                   <div className="flex justify-end">
                     <button onClick={() => navigate('/admin/chat')}
-                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl gradient-bg text-white text-sm font-medium hover:shadow-[0_0_20px_rgba(139,92,246,0.4)] transition-all"
+                      className="btn-green btn-primary inline-flex items-center gap-2 px-5 py-2.5 text-sm"
                     >
                       <FiMessageSquare size={15} /> Chat with {selectedContact.name?.split(' ')[0]}
                     </button>

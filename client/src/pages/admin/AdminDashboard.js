@@ -7,7 +7,8 @@ import { io } from 'socket.io-client';
 import { format, parseISO } from 'date-fns';
 import {
   PieChart, Pie, Cell, ResponsiveContainer, Tooltip as ReTooltip,
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, ComposedChart, Line, Legend
+  XAxis, YAxis, CartesianGrid,
+  AreaChart, Area
 } from 'recharts';
 import { useAuth } from '../../context/AuthContext';
 import AdminLayout from '../../components/AdminLayout';
@@ -83,10 +84,10 @@ function VideoTooltip({ active, payload, stats }) {
   return (
     <div className="glass p-3 rounded-xl border border-white/10 shadow-xl" style={{ background: 'rgba(15,23,42,0.95)' }}>
       <p className="text-sm font-bold text-white" style={{ color: d.payload.color }}>{d.name}</p>
-      <p className="text-xs text-white/70 mt-1">Count: <span className="text-white font-bold">{d.value}</span></p>
+      <p className="text-xs text-white mt-1">Count: <span className="text-white font-bold">{d.value}</span></p>
       <div className="mt-2 pt-2 border-t border-white/10 space-y-1">
-        <p className="text-xs text-white/70">Total Views: <span className="text-white font-bold">{stats?.totalVideoViews || 0}</span></p>
-        <p className="text-xs text-white/70">Avg Rating: <span className="text-yellow-400 font-bold">{(stats?.avgVideoRating || 0).toFixed(1)} ★</span></p>
+        <p className="text-xs text-white">Total Views: <span className="text-white font-bold">{stats?.totalVideoViews || 0}</span></p>
+        <p className="text-xs text-white">Avg Rating: <span className="text-yellow-400 font-bold">{(stats?.avgVideoRating || 0).toFixed(1)} ★</span></p>
       </div>
     </div>
   );
@@ -98,37 +99,37 @@ function PieTooltip({ active, payload }) {
   return (
     <div className="glass p-3 rounded-xl border border-white/10 shadow-xl" style={{ background: 'rgba(15,23,42,0.95)' }}>
       <p className="text-sm font-bold text-white" style={{ color: d.payload.color }}>{d.name}</p>
-      <p className="text-xs text-white/70 mt-1">Count: <span className="text-white font-bold">{d.value}</span></p>
-      <p className="text-xs text-white/40" suppressHydrationWarning>Updated {format(new Date(), 'h:mm a')}</p>
+      <p className="text-xs text-white mt-1">Count: <span className="text-white font-bold">{d.value}</span></p>
+      <p className="text-xs text-white" suppressHydrationWarning>Updated {format(new Date(), 'h:mm a')}</p>
     </div>
   );
 }
 
-function CandleTooltip({ active, payload, label }) {
+function MessageActivityTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
   const d = payload[0]?.payload;
   if (!d) return null;
-  const isGreen = d.close >= d.open;
+  const colors = { open: '#8B5CF6', high: '#10B981', low: '#F59E0B', close: '#EC4899' };
   return (
     <div className="glass p-4 rounded-xl border border-white/10 shadow-xl min-w-[200px]" style={{ background: 'rgba(15,23,42,0.95)' }}>
-      <p className="text-xs text-white/50 mb-2" suppressHydrationWarning>
+      <p className="text-xs text-white mb-2" suppressHydrationWarning>
         {(() => { try { return format(parseISO(d.date), 'MMM dd, yyyy'); } catch { return d.date; } })()}
       </p>
       <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
-        <span className="text-white/50">Open:</span>
-        <span className="text-white font-bold text-right">{d.open}</span>
-        <span className="text-white/50">Close:</span>
-        <span className={`font-bold text-right ${isGreen ? 'text-green-400' : 'text-red-400'}`}>{d.close}</span>
-        <span className="text-white/50">High:</span>
-        <span className="text-white font-bold text-right">{d.high}</span>
-        <span className="text-white/50">Low:</span>
-        <span className="text-white font-bold text-right">{d.low}</span>
-        <span className="text-white/50">Volume:</span>
-        <span className="text-white font-bold text-right">{d.volume}</span>
-        <span className="text-white/50">Change:</span>
-        <span className={`font-bold text-right ${isGreen ? 'text-green-400' : 'text-red-400'}`}>
-          {d.open > 0 ? `${((d.close - d.open) / d.open * 100).toFixed(2)}%` : '0.00%'}
-        </span>
+        {['open', 'high', 'low', 'close'].map((key) => (
+          <React.Fragment key={key}>
+            <span className="flex items-center gap-1.5 text-white">
+              <span className="w-2 h-2 rounded-full" style={{ background: colors[key] }} /> {key.charAt(0).toUpperCase() + key.slice(1)}:
+            </span>
+            <span className="text-white font-bold text-right" style={{ color: colors[key] }}>{d[key]}</span>
+          </React.Fragment>
+        ))}
+        {d.volume !== undefined && (
+          <>
+            <span className="text-white">Volume:</span>
+            <span className="text-white font-bold text-right">{d.volume}</span>
+          </>
+        )}
       </div>
     </div>
   );
@@ -143,10 +144,10 @@ function PieCard({ config, stats, customTooltip }) {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="card"
+      className="card-gradient" style={{ background: 'linear-gradient(135deg, rgba(239,68,68,0.15), rgba(220,38,38,0.08))', backdropFilter: 'blur(15px)', border: '1px solid rgba(239,68,68,0.2)', boxShadow: '0 0 25px rgba(239,68,68,0.12), 0 0 50px rgba(239,68,68,0.06)', padding: '1.5rem', borderRadius: '1rem' }}
     >
       <div className="flex items-center justify-between mb-2">
-        <span className="text-text-muted text-xs">{config.label}</span>
+        <span className="text-white text-xs">{config.label}</span>
         <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: `${data[0]?.color || COLORS.purple}20`, border: `1px solid ${data[0]?.color || COLORS.purple}30` }}>
           <config.icon size={16} style={{ color: data[0]?.color || COLORS.purple }} />
         </div>
@@ -154,8 +155,22 @@ function PieCard({ config, stats, customTooltip }) {
 
       <div className="flex items-center gap-4">
         <div className="w-20 h-20 shrink-0">
-          <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%">
             <PieChart>
+              <defs>
+                {data.map((entry, idx) => (
+                  <filter key={idx} id={`pie-glow-${config.key}-${idx}`} x="-50%" y="-50%" width="200%" height="200%">
+                    <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur" />
+                    <feComponentTransfer in="blur" result="glow">
+                      <feFuncA type="linear" slope="1.5" />
+                    </feComponentTransfer>
+                    <feMerge>
+                      <feMergeNode in="glow" />
+                      <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                  </filter>
+                ))}
+              </defs>
               <Pie
                 data={data}
                 cx="50%"
@@ -172,8 +187,9 @@ function PieCard({ config, stats, customTooltip }) {
                     key={idx}
                     fill={entry.color}
                     opacity={hoverIndex === null || hoverIndex === idx ? 1 : 0.4}
-                    stroke={hoverIndex === idx ? entry.color : 'transparent'}
-                    strokeWidth={hoverIndex === idx ? 2 : 0}
+                    stroke={hoverIndex === idx ? entry.color : entry.color}
+                    strokeWidth={hoverIndex === idx ? 2 : 1}
+                    filter={`url(#pie-glow-${config.key}-${idx})`}
                   />
                 ))}
               </Pie>
@@ -188,7 +204,7 @@ function PieCard({ config, stats, customTooltip }) {
             {data.map((d, i) => (
               <div key={i} className="flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full shrink-0" style={{ background: d.color }} />
-                <span className="text-xs text-white/60">{d.name}: <span className="text-white/90 font-medium">{d.value}</span></span>
+                <span className="text-xs text-white">{d.name}: <span className="text-white font-medium">{d.value}</span></span>
               </div>
             ))}
           </div>
@@ -198,53 +214,49 @@ function PieCard({ config, stats, customTooltip }) {
   );
 }
 
-function Candlestick({ x, y, width, height, payload }) {
-  if (!payload) return null;
-  const { open, close, high, low } = payload;
-  const isGreen = close >= open;
-  const color = isGreen ? COLORS.green : COLORS.red;
-  const scale = height / (Math.max(high, low, open, close, 1) * 1.3);
-  const candleY = y + (Math.max(high, low, open, close) - Math.max(open, close)) * scale;
-  const candleHeight = Math.abs(open - close) * scale || 1;
-  const wickTop = y + (Math.max(high, low, open, close) - high) * scale;
-  const wickBottom = y + (Math.max(high, low, open, close) - low) * scale;
-
-  return (
-    <g>
-      <line x1={x + width / 2} x2={x + width / 2} y1={wickTop} y2={wickBottom} stroke={color} strokeWidth={1.5} />
-      <rect x={x + width * 0.15} y={candleY} width={width * 0.7} height={Math.max(candleHeight, 1)} fill={color} rx={1} />
-    </g>
-  );
-}
-
-function CandlestickChart({ data }) {
+function MessageActivityChart({ data }) {
   if (!data || data.length === 0) {
     return (
-      <div className="card">
+    <div className="card card-glow" style={{ background: 'linear-gradient(135deg, rgba(139,92,246,0.25), rgba(124,58,237,0.15))', border: '1px solid rgba(139,92,246,0.35)' }}>
         <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-          <FiTrendingUp className="text-primary" /> Message Activity (OHLC)
+          <FiTrendingUp className="text-primary" /> Message Activity
         </h2>
-        <p className="text-white/50 text-sm py-8 text-center">No message data yet for candlestick visualization</p>
+        <p className="text-white text-sm py-8 text-center">No message data yet</p>
       </div>
     );
   }
 
-  const maxVal = Math.max(...data.flatMap(d => [d.high, d.low, d.open, d.close]), 1);
+  const colors = {
+    open: '#8B5CF6',
+    high: '#10B981',
+    low: '#F59E0B',
+    close: '#EC4899'
+  };
 
   return (
-    <div className="card">
+    <div className="card card-glow" style={{ background: 'linear-gradient(135deg, rgba(139,92,246,0.25), rgba(124,58,237,0.15))', border: '1px solid rgba(139,92,246,0.35)' }}>
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-bold text-white flex items-center gap-2">
-          <FiTrendingUp className="text-primary" /> Message Activity (OHLC)
+          <FiTrendingUp className="text-primary" /> Message Activity
         </h2>
         <div className="flex items-center gap-3 text-xs">
-          <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-green-400 inline-block" /> Bullish</span>
-          <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-red-400 inline-block" /> Bearish</span>
+          <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full" style={{ background: colors.open }} /> Open</span>
+          <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full" style={{ background: colors.high }} /> High</span>
+          <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full" style={{ background: colors.low }} /> Low</span>
+          <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full" style={{ background: colors.close }} /> Close</span>
         </div>
       </div>
       <div className="h-72">
         <ResponsiveContainer width="100%" height="100%">
-          <ComposedChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+          <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+            <defs>
+              {Object.entries(colors).map(([key, color]) => (
+                <linearGradient key={key} id={`grad-${key}`} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={color} stopOpacity={0.4} />
+                  <stop offset="100%" stopColor={color} stopOpacity={0.05} />
+                </linearGradient>
+              ))}
+            </defs>
             <CartesianGrid stroke="rgba(255,255,255,0.05)" vertical={false} />
             <XAxis
               dataKey="date"
@@ -254,24 +266,30 @@ function CandlestickChart({ data }) {
               tickLine={false}
             />
             <YAxis
-              domain={[0, maxVal * 1.3]}
               tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.4)' }}
               axisLine={false}
               tickLine={false}
               width={30}
             />
-            <ReTooltip content={<CandleTooltip />} />
-            <Bar
-              dataKey="high"
-              shape={(props) => <Candlestick {...props} />}
-              isAnimationActive={false}
-            />
-          </ComposedChart>
+            <ReTooltip content={<MessageActivityTooltip />} />
+            {Object.entries(colors).map(([key, color]) => (
+              <Area
+                key={key}
+                type="monotone"
+                dataKey={key}
+                stroke={color}
+                strokeWidth={2}
+                fill={`url(#grad-${key})`}
+                dot={false}
+                activeDot={{ r: 4, stroke: color, strokeWidth: 2, fill: '#0F172A' }}
+              />
+            ))}
+          </AreaChart>
         </ResponsiveContainer>
       </div>
-      <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/5 text-xs text-white/40">
+      <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/5 text-xs text-white">
         <span>Open · High · Low · Close</span>
-        <span>Last 7 days</span>
+        <span>Last {data.length} days</span>
       </div>
     </div>
   );
@@ -312,32 +330,40 @@ export default function AdminDashboard() {
       </div>
 
       <div className="mb-8">
-        <CandlestickChart data={candlestickData} />
+        <MessageActivityChart data={candlestickData} />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="card">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="card card-glow">
           <h2 className="text-lg font-bold text-white mb-4">Quick Actions</h2>
           <div className="grid grid-cols-2 gap-3">
-            <Link to="/admin/projects" className="p-4 rounded-xl glass hover:bg-primary/10 transition-all text-center">
-              <FiFolder className="mx-auto mb-2 text-primary" size={24} />
+            <Link to="/admin/projects" className="p-4 rounded-xl glass hover:bg-primary/10 transition-all text-center group">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-400 to-purple-500 flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform shadow-lg shadow-purple-500/30">
+                <FiFolder className="text-white" size={20} />
+              </div>
               <span className="text-sm text-white">New Project</span>
             </Link>
-            <Link to="/admin/feedback" className="p-4 rounded-xl glass hover:bg-primary/10 transition-all text-center">
-              <FiMessageCircle className="mx-auto mb-2 text-primary" size={24} />
+            <Link to="/admin/feedback" className="p-4 rounded-xl glass hover:bg-primary/10 transition-all text-center group">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform shadow-lg shadow-cyan-500/30">
+                <FiMessageCircle className="text-white" size={20} />
+              </div>
               <span className="text-sm text-white">View Feedback</span>
             </Link>
-            <Link to="/admin/faqs" className="p-4 rounded-xl glass hover:bg-primary/10 transition-all text-center">
-              <FiBarChart2 className="mx-auto mb-2 text-primary" size={24} />
+            <Link to="/admin/faqs" className="p-4 rounded-xl glass hover:bg-primary/10 transition-all text-center group">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform shadow-lg shadow-amber-500/30">
+                <FiBarChart2 className="text-white" size={20} />
+              </div>
               <span className="text-sm text-white">Manage FAQs</span>
             </Link>
-            <Link to="/admin/testimonials" className="p-4 rounded-xl glass hover:bg-primary/10 transition-all text-center">
-              <FiStar className="mx-auto mb-2 text-primary" size={24} />
+            <Link to="/admin/testimonials" className="p-4 rounded-xl glass hover:bg-primary/10 transition-all text-center group">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-pink-400 to-rose-500 flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform shadow-lg shadow-pink-500/30">
+                <FiStar className="text-white" size={20} />
+              </div>
               <span className="text-sm text-white">Testimonials</span>
             </Link>
           </div>
         </div>
-        <div className="card">
+        <div className="card card-glow">
           <h2 className="text-lg font-bold text-white mb-4">Recent Contacts</h2>
           {recentContacts.length > 0 ? (
             <div className="space-y-3">
@@ -345,7 +371,7 @@ export default function AdminDashboard() {
                 <div key={i} className="flex items-center justify-between p-3 rounded-xl glass">
                   <div>
                     <p className="text-sm font-medium text-white">{contact.name}</p>
-                    <p className="text-xs text-white/50">{contact.subject}</p>
+                    <p className="text-xs text-white">{contact.subject}</p>
                   </div>
                   <span className={`text-xs px-2 py-1 rounded-lg ${contact.isRead ? 'bg-green-500/10 text-green-400' : 'bg-yellow-500/10 text-yellow-400'}`}>
                     {contact.isRead ? 'Read' : 'New'}
@@ -354,7 +380,7 @@ export default function AdminDashboard() {
               ))}
             </div>
           ) : (
-            <p className="text-white/50 text-sm">No contacts yet</p>
+            <p className="text-white text-sm">No contacts yet</p>
           )}
         </div>
       </div>

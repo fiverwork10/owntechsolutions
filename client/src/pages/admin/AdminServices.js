@@ -84,11 +84,11 @@ export default function AdminServices() {
     <AdminLayout title={`Services (${services.length})`}>
       <div className="flex items-center justify-between mb-6">
         <div></div>
-        <button onClick={() => { setShowForm(true); setEditing(null); resetForm(); }} className="btn-primary !py-2 !px-4 !text-sm"><FiPlus /> Add Service</button>
+        <button onClick={() => { setShowForm(true); setEditing(null); resetForm(); }} className="btn-green !py-2 !px-4 !text-sm btn-primary"><FiPlus /> Add Service</button>
       </div>
 
       {showForm && (
-        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="card mb-8">
+        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="card card-gradient card-glow mb-8">
           <div className="flex justify-between items-center mb-6"><h2 className="text-lg font-bold text-white">{editing ? 'Edit Service' : 'New Service'}</h2><button onClick={() => setShowForm(false)} className="w-8 h-8 rounded-lg glass flex items-center justify-center"><FiX /></button></div>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -146,7 +146,7 @@ export default function AdminServices() {
           {services.map((service, i) => {
             const IconComp = iconMap[service.icon] || FiCode;
             return (
-              <motion.div key={service._id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.02 }} className="card !p-4">
+              <motion.div key={service._id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.02 }} className="card card-gradient card-glow !p-4">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-4 flex-1">
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${service.color}20`, border: `1px solid ${service.color}30` }}>

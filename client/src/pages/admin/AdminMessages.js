@@ -101,7 +101,7 @@ export default function AdminMessages() {
               </div>
               <div className="p-4 border-t border-glass-border flex gap-3">
                 <input value={reply} onChange={(e) => setReply(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && sendReply()} placeholder="Type reply..." className="input-field flex-1" />
-                <button onClick={sendReply} className="btn-primary !py-2 shrink-0">Send</button>
+                <button onClick={sendReply} className="btn-cyan btn-primary !py-2 shrink-0">Send</button>
               </div>
             </>
           ) : (

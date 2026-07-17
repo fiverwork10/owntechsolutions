@@ -94,12 +94,12 @@ export default function AdminTestimonials() {
     <AdminLayout title={`Testimonials (${testimonials.length})`}>
       <div className="flex items-center justify-between mb-6">
         <div></div>
-        <button onClick={() => { resetForm(); setShowForm(true); }} className="btn-primary !py-2 !px-4 !text-sm"><FiPlus /> Add Testimonial</button>
+        <button onClick={() => { resetForm(); setShowForm(true); }} className="btn-pink !py-2 !px-4 !text-sm btn-primary"><FiPlus /> Add Testimonial</button>
       </div>
 
       <AnimatePresence>
-        {showForm && (
-          <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="card mb-8">
+          {showForm && (
+          <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="card card-gradient card-glow mb-8">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-lg font-bold text-white">{editing ? 'Edit Testimonial' : 'New Testimonial'}</h2>
               <button onClick={resetForm} className="w-8 h-8 rounded-lg glass flex items-center justify-center"><FiX /></button>
@@ -152,7 +152,7 @@ export default function AdminTestimonials() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {testimonials.map((t, i) => (
-            <motion.div key={t._id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className="card">
+            <motion.div key={t._id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className="card card-gradient card-glow">
               <div className="flex items-start gap-4 mb-3">
                 <div className="w-12 h-12 rounded-full overflow-hidden shrink-0 bg-primary/20 flex items-center justify-center text-lg font-bold text-primary">
                   {t.photo ? (
@@ -200,7 +200,7 @@ export default function AdminTestimonials() {
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.85, opacity: 0, y: 40 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="glass-strong rounded-3xl p-6 md:p-8 max-w-md w-full relative mx-4 border border-primary/10"
+              className="glass-strong rounded-3xl p-6 md:p-8 max-w-md w-full relative mx-4 border border-primary/20 shadow-[0_0_40px_rgba(139,92,246,0.15)]"
               onClick={(e) => e.stopPropagation()}
             >
               <button type="button" onClick={() => setViewing(null)} className="absolute -top-3 -right-3 w-10 h-10 rounded-full glass flex items-center justify-center text-gray-300 hover:text-white transition-all cursor-pointer z-10">

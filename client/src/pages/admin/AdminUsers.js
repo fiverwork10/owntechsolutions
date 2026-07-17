@@ -63,38 +63,38 @@ export default function AdminUsers() {
   return (
     <AdminLayout title="Users">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div className="card">
+        <div className="card card-gradient card-glow">
           <div className="flex items-center justify-between mb-2">
             <span className="text-white/60 text-xs">Total Users</span>
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'rgba(139,92,246,0.12)', border: '1px solid rgba(139,92,246,0.25)' }}>
-              <FiUsers size={16} color="#8B5CF6" />
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-gradient-to-br from-purple-500/30 to-purple-600/30 border border-purple-500/30 shadow-lg shadow-purple-500/20">
+              <FiUsers size={16} className="text-purple-400" />
             </div>
           </div>
           <p className="text-2xl font-bold text-white">{totalUsers}</p>
         </div>
-        <div className="card">
+        <div className="card card-gradient card-glow">
           <div className="flex items-center justify-between mb-2">
             <span className="text-white/60 text-xs">Registered Users</span>
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'rgba(139,92,246,0.12)', border: '1px solid rgba(139,92,246,0.25)' }}>
-              <FiUser size={16} color="#8B5CF6" />
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-gradient-to-br from-blue-500/30 to-blue-600/30 border border-blue-500/30 shadow-lg shadow-blue-500/20">
+              <FiUser size={16} className="text-blue-400" />
             </div>
           </div>
           <p className="text-2xl font-bold text-white">{userCount}</p>
         </div>
-        <div className="card">
+        <div className="card card-gradient card-glow">
           <div className="flex items-center justify-between mb-2">
             <span className="text-white/60 text-xs">Guest Users</span>
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'rgba(139,92,246,0.12)', border: '1px solid rgba(139,92,246,0.25)' }}>
-              <FiUser size={16} color="#8B5CF6" />
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-gradient-to-br from-amber-500/30 to-orange-500/30 border border-amber-500/30 shadow-lg shadow-amber-500/20">
+              <FiUser size={16} className="text-amber-400" />
             </div>
           </div>
           <p className="text-2xl font-bold text-white">{guestCount}</p>
         </div>
-        <div className="card">
+        <div className="card card-gradient card-glow">
           <div className="flex items-center justify-between mb-2">
             <span className="text-white/60 text-xs">Admins</span>
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'rgba(139,92,246,0.12)', border: '1px solid rgba(139,92,246,0.25)' }}>
-              <FiShield size={16} color="#8B5CF6" />
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-gradient-to-br from-cyan-500/30 to-teal-500/30 border border-cyan-500/30 shadow-lg shadow-cyan-500/20">
+              <FiShield size={16} className="text-cyan-400" />
             </div>
           </div>
           <p className="text-2xl font-bold text-white">{adminCount}</p>
@@ -102,7 +102,7 @@ export default function AdminUsers() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        <div className="card lg:col-span-2">
+        <div className="card card-gradient card-glow lg:col-span-2">
           <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
             <FiTrendingUp className="text-primary" /> User Registration Trend
           </h2>
@@ -134,7 +134,7 @@ export default function AdminUsers() {
           )}
         </div>
 
-        <div className="card">
+        <div className="card card-gradient card-glow">
           <h2 className="text-lg font-bold text-white mb-4">User Roles</h2>
           {roleDist.length > 0 ? (
             <div className="h-64 flex items-center justify-center">
@@ -165,42 +165,42 @@ export default function AdminUsers() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        <div className="card">
+        <div className="card card-gradient card-glow">
           <div className="flex items-center justify-between mb-2">
             <span className="text-white/60 text-xs">Total Project Views</span>
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'rgba(59,130,246,0.12)', border: '1px solid rgba(59,130,246,0.25)' }}>
-              <FiEye size={16} color="#3B82F6" />
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-gradient-to-br from-blue-500/30 to-indigo-500/30 border border-blue-500/30 shadow-lg shadow-blue-500/20">
+              <FiEye size={16} className="text-blue-400" />
             </div>
           </div>
           <p className="text-2xl font-bold text-white">{stats?.totalProjectViews || 0}</p>
         </div>
-        <div className="card">
+        <div className="card card-gradient card-glow">
           <div className="flex items-center justify-between mb-2">
             <span className="text-white/60 text-xs">Total Contacts</span>
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.25)' }}>
-              <FiMessageSquare size={16} color="#10B981" />
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-gradient-to-br from-green-500/30 to-emerald-500/30 border border-green-500/30 shadow-lg shadow-green-500/20">
+              <FiMessageSquare size={16} className="text-green-400" />
             </div>
           </div>
           <p className="text-2xl font-bold text-white">{stats?.totalContacts || 0}</p>
         </div>
-        <div className="card">
+        <div className="card card-gradient card-glow">
           <div className="flex items-center justify-between mb-2">
             <span className="text-white/60 text-xs">Total Feedback</span>
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.25)' }}>
-              <FiStar size={16} color="#F59E0B" />
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-gradient-to-br from-amber-500/30 to-yellow-500/30 border border-amber-500/30 shadow-lg shadow-amber-500/20">
+              <FiStar size={16} className="text-amber-400" />
             </div>
           </div>
           <p className="text-2xl font-bold text-white">{stats?.totalFeedback || 0}</p>
         </div>
       </div>
 
-      <div className="card">
+      <div className="card card-gradient card-glow">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold text-white flex items-center gap-2">
             <FiUsers className="text-primary" /> All Users
           </h2>
           <div className="flex items-center gap-3">
-            <button onClick={() => setShowCreateModal(true)} className="btn-primary text-xs !py-2 !px-3 flex items-center gap-1.5">
+            <button onClick={() => setShowCreateModal(true)} className="btn-cyan btn-primary text-xs !py-2 !px-3 flex items-center gap-1.5">
               <FiPlus size={14} /> Create Admin
             </button>
             <span className="text-xs text-white/50">{users.length} users</span>

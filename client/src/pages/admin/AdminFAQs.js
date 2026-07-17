@@ -62,11 +62,11 @@ export default function AdminFAQs() {
     <AdminLayout title={`FAQs (${faqs.length})`}>
       <div className="flex items-center justify-between mb-6">
         <div></div>
-        <button onClick={() => { setShowForm(true); setEditing(null); setForm({ question: '', answer: '', category: 'general', tags: '' }); }} className="btn-primary !py-2 !px-4 !text-sm"><FiPlus /> Add FAQ</button>
+        <button onClick={() => { setShowForm(true); setEditing(null); setForm({ question: '', answer: '', category: 'general', tags: '' }); }} className="btn-amber !py-2 !px-4 !text-sm btn-primary"><FiPlus /> Add FAQ</button>
       </div>
 
       {showForm && (
-        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="card mb-8">
+        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="card card-gradient card-glow mb-8">
           <div className="flex justify-between items-center mb-6"><h2 className="text-lg font-bold text-white">{editing ? 'Edit FAQ' : 'New FAQ'}</h2><button onClick={() => setShowForm(false)} className="w-8 h-8 rounded-lg glass flex items-center justify-center"><FiX /></button></div>
           <form onSubmit={handleSubmit} className="space-y-4">
             <input value={form.question} onChange={(e) => setForm({ ...form, question: e.target.value })} placeholder="Question" className="input-field" required />
@@ -87,7 +87,7 @@ export default function AdminFAQs() {
       ) : (
         <div className="space-y-3">
           {faqs.map((faq, i) => (
-            <motion.div key={faq._id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.02 }} className="card !p-4">
+            <motion.div key={faq._id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.02 }} className="card card-gradient card-glow !p-4">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
                   <span className="text-xs text-primary font-medium">{faq.category}</span>

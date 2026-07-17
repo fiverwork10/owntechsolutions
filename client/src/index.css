@@ -55,7 +55,9 @@
   }
   .btn-primary {
     @apply relative inline-flex items-center justify-center gap-2 px-8 py-3 font-semibold text-white rounded-xl overflow-hidden;
-    background: linear-gradient(135deg, #8B5CF6, #6D28D9);
+    background: linear-gradient(135deg, #8B5CF6, #6D28D9, #A78BFA);
+    background-size: 200% 200%;
+    animation: gradient 3s ease infinite;
     transition: all 0.3s ease;
   }
   .btn-primary:hover {
@@ -71,6 +73,65 @@
     border-color: rgba(139, 92, 246, 0.4);
     transform: translateY(-2px);
     box-shadow: 0 0 20px rgba(139, 92, 246, 0.2);
+  }
+  .btn-cyan {
+    background: linear-gradient(135deg, #06B6D4, #0891B2, #22D3EE);
+    background-size: 200% 200%;
+    animation: gradient 3s ease infinite;
+  }
+  .btn-cyan:hover { box-shadow: 0 0 25px rgba(6, 182, 212, 0.4); }
+  .btn-green {
+    background: linear-gradient(135deg, #10B981, #059669, #34D399);
+    background-size: 200% 200%;
+    animation: gradient 3s ease infinite;
+  }
+  .btn-green:hover { box-shadow: 0 0 25px rgba(16, 185, 129, 0.4); }
+  .btn-blue {
+    background: linear-gradient(135deg, #3B82F6, #2563EB, #60A5FA);
+    background-size: 200% 200%;
+    animation: gradient 3s ease infinite;
+  }
+  .btn-blue:hover { box-shadow: 0 0 25px rgba(59, 130, 246, 0.4); }
+  .btn-amber {
+    background: linear-gradient(135deg, #F59E0B, #D97706, #FBBF24);
+    background-size: 200% 200%;
+    animation: gradient 3s ease infinite;
+  }
+  .btn-amber:hover { box-shadow: 0 0 25px rgba(245, 158, 11, 0.4); }
+  .btn-pink {
+    background: linear-gradient(135deg, #EC4899, #DB2777, #F472B6);
+    background-size: 200% 200%;
+    animation: gradient 3s ease infinite;
+  }
+  .btn-pink:hover { box-shadow: 0 0 25px rgba(236, 72, 153, 0.4); }
+  .btn-red {
+    background: linear-gradient(135deg, #EF4444, #DC2626, #F87171);
+    background-size: 200% 200%;
+    animation: gradient 3s ease infinite;
+  }
+  .btn-red:hover { box-shadow: 0 0 25px rgba(239, 68, 68, 0.4); }
+  .card-gradient {
+    position: relative;
+    border: 1px solid transparent;
+    background-clip: padding-box;
+  }
+  .card-gradient::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(139,92,246,0.3), rgba(6,182,212,0.3), rgba(236,72,153,0.3));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+  .card-glow {
+    box-shadow: 0 0 20px rgba(139,92,246,0.08), 0 0 40px rgba(6,182,212,0.05), 0 4px 15px rgba(139,92,246,0.05);
+  }
+  .card-glow:hover {
+    box-shadow: 0 0 30px rgba(139,92,246,0.15), 0 0 50px rgba(6,182,212,0.08), 0 8px 25px rgba(139,92,246,0.08);
   }
   .section-title {
     @apply text-4xl md:text-5xl lg:text-6xl font-bold text-center mb-4;
