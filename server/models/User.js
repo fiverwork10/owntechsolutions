@@ -9,7 +9,10 @@ const userSchema = new mongoose.Schema({
   avatar: { type: String, default: '' },
   phone: { type: String, default: '' },
   isActive: { type: Boolean, default: true },
-  lastLogin: { type: Date }
+  lastLogin: { type: Date },
+  googleDriveAccessToken: { type: String, default: '' },
+  googleDriveRefreshToken: { type: String, default: '' },
+  googleDriveTokenExpiry: { type: Date, default: null }
 }, { timestamps: true });
 
 userSchema.pre('save', async function(next) {

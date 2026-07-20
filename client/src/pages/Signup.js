@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FiUser, FiMail, FiLock, FiEye, FiEyeOff, FiArrowRight, FiLogIn } from 'react-icons/fi';
@@ -9,12 +9,39 @@ export default function Signup() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { register, user, token } = useAuth();
+  const { register, user, token, API } = useAuth();
   const navigate = useNavigate();
+  const googleBtnRef = useRef(null);
 
   useEffect(() => {
     if (user && token && user.role !== 'admin') navigate('/');
-  }, [user, token, navigate, user?.role]);
+  }, [user, token, navigate]);
+
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.onload = () => {
+      if (!window.google || !googleBtnRef.current) return;
+      window.google.accounts.id.initialize({
+        client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID || '332707371177-nbolpaebcv9151sgidp9o7gimqdgoj3q.apps.googleusercontent.com',
+        callback: async (response) => {
+          try {
+            setLoading(true);
+            const res = await API.post('/auth/google', { credential: response.credential });
+            localStorage.setItem('token', res.data.token);
+            window.location.reload();
+          } catch (err) {
+            setError('Google sign-in failed');
+            setLoading(false);
+          }
+        },
+      });
+      window.google.accounts.id.renderButton(googleBtnRef.current, { size: 'large', text: 'signup_with', shape: 'pill', width: 320 });
+    };
+    document.body.appendChild(script);
+    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -30,6 +57,7 @@ export default function Signup() {
     setLoading(true);
     try {
       await register(form.name, form.email, form.password);
+      navigate('/');
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed');
     } finally {
@@ -123,6 +151,13 @@ export default function Signup() {
               )}
             </motion.button>
           </form>
+
+          <div className="relative my-4">
+            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-glass-border" /></div>
+            <div className="relative flex justify-center text-xs"><span className="bg-background-card px-4 text-text-muted">or</span></div>
+          </div>
+
+          <div ref={googleBtnRef} className="flex justify-center mb-4" />
 
           <div className="relative my-4">
             <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-glass-border" /></div>

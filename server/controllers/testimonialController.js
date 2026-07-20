@@ -16,6 +16,8 @@ exports.createTestimonial = async (req, res) => {
     const data = { ...req.body };
     if (req.file) {
       data.photo = req.file.path;
+    } else if (req.body.photo) {
+      data.photo = req.body.photo;
     }
     if (data.rating) data.rating = Number(data.rating);
     const testimonial = new Testimonial(data);
@@ -32,6 +34,8 @@ exports.updateTestimonial = async (req, res) => {
     const data = { ...req.body };
     if (req.file) {
       data.photo = req.file.path;
+    } else if (req.body.photo) {
+      data.photo = req.body.photo;
     }
     if (data.rating) data.rating = Number(data.rating);
     const testimonial = await Testimonial.findByIdAndUpdate(req.params.id, data, { new: true });

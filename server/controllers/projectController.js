@@ -76,6 +76,10 @@ exports.createProject = async (req, res) => {
           name: f.originalname
         }));
       }
+    } else if (req.body.images || req.body.videos || req.body.documents) {
+      if (req.body.images) projectData.images = req.body.images;
+      if (req.body.videos) projectData.videos = req.body.videos;
+      if (req.body.documents) projectData.documents = req.body.documents;
     }
     const project = new Project(projectData);
     await project.save();
@@ -115,7 +119,6 @@ exports.updateProject = async (req, res) => {
         project.images = kept;
       }
     }
-    Object.assign(project, updateData);
     if (req.files) {
       if (req.files.images) {
         project.images = [
@@ -135,7 +138,18 @@ exports.updateProject = async (req, res) => {
           ...req.files.documents.map(f => ({ url: f.path, publicId: f.filename, name: f.originalname }))
         ];
       }
+    } else if (req.body.images || req.body.videos || req.body.documents) {
+      const directImages = req.body.images || [];
+      const directVideos = req.body.videos || [];
+      const directDocs = req.body.documents || [];
+      project.images = [...project.images, ...directImages];
+      project.videos = [...project.videos, ...directVideos];
+      project.documents = [...project.documents, ...directDocs];
     }
+    delete updateData.images;
+    delete updateData.videos;
+    delete updateData.documents;
+    Object.assign(project, updateData);
     if (req.body.isPublished && !project.publishedAt) {
       project.publishedAt = new Date();
     }

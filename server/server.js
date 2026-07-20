@@ -50,6 +50,7 @@ app.use('/api/services', require('./routes/services'));
 app.use('/api/comments', require('./routes/comments'));
 app.use('/api/videos', require('./routes/videos'));
 app.use('/api/notifications', require('./routes/notifications'));
+app.use('/api/upload', require('./routes/upload'));
 
 const upload = require('./middleware/upload');
 
@@ -355,6 +356,8 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 5000;
+server.requestTimeout = 900000;
+server.headersTimeout = 900000;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   initWhatsApp();

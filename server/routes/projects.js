@@ -10,7 +10,7 @@ const {
 } = require('../controllers/projectController');
 
 const cpUpload = upload.fields([
-  { name: 'images', maxCount: 12 },
+  { name: 'images', maxCount: 40 },
   { name: 'videos', maxCount: 5 },
   { name: 'documents', maxCount: 5 }
 ]);

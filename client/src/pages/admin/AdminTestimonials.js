@@ -5,6 +5,7 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { useAuth } from '../../context/AuthContext';
 import AdminLayout from '../../components/AdminLayout';
 import { queryClient } from '../../components/QueryProvider';
+import { openWidget } from '../../utils/cloudinaryUpload';
 
 export default function AdminTestimonials() {
   const { API } = useAuth();
@@ -12,9 +13,9 @@ export default function AdminTestimonials() {
   const [editing, setEditing] = useState(null);
   const [viewing, setViewing] = useState(null);
   const [form, setForm] = useState({ clientName: '', company: '', position: '', review: '', rating: 5 });
-  const [photoFile, setPhotoFile] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
-  const fileRef = useRef(null);
+  const [photoUpload, setPhotoUpload] = useState({ status: 'idle', progress: 0, url: null });
+  const pendingPhotoRef = useRef({ testimonialId: null });
 
   const { data: testimonials = [], isLoading } = useQuery({
     queryKey: ['admin', 'testimonials'],
@@ -24,24 +25,49 @@ export default function AdminTestimonials() {
     },
   });
 
+  const startPhotoUpload = async () => {
+    try {
+      const result = await openWidget({ maxFileSize: 10485760 });
+      const url = result.url;
+      setPhotoUpload({ status: 'done', progress: 100, url });
+      setPhotoPreview(url);
+      if (pendingPhotoRef.current.testimonialId) {
+        try {
+          await API.put(`/testimonials/${pendingPhotoRef.current.testimonialId}`, { photo: url });
+          queryClient.invalidateQueries({ queryKey: ['admin', 'testimonials'] });
+        } catch {}
+      }
+    } catch (err) {
+      if (err.message !== 'Upload cancelled') {
+        setPhotoUpload({ status: 'error', progress: 0, url: null });
+      }
+    }
+  };
+
   const saveMutation = useMutation({
     mutationFn: async () => {
-      const fd = new FormData();
-      fd.append('clientName', form.clientName);
-      fd.append('company', form.company);
-      fd.append('position', form.position || '');
-      fd.append('review', form.review);
-      fd.append('rating', String(form.rating));
-      if (photoFile) fd.append('photo', photoFile);
+      const body = {
+        clientName: form.clientName,
+        company: form.company,
+        position: form.position || '',
+        review: form.review,
+        rating: String(form.rating),
+      };
+      if (photoUpload.url) {
+        body.photo = photoUpload.url;
+      } else if (editing && photoPreview) {
+        body.photo = photoPreview;
+      }
       if (editing) {
-        const res = await API.put(`/testimonials/${editing}`, fd);
+        const res = await API.put(`/testimonials/${editing}`, body);
         return res.data;
       } else {
-        const res = await API.post('/testimonials', fd);
+        const res = await API.post('/testimonials', body);
         return res.data;
       }
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      pendingPhotoRef.current.testimonialId = data._id || editing;
       queryClient.invalidateQueries({ queryKey: ['admin', 'testimonials'] });
       resetForm();
     },
@@ -60,8 +86,8 @@ export default function AdminTestimonials() {
     setShowForm(false);
     setEditing(null);
     setForm({ clientName: '', company: '', position: '', review: '', rating: 5 });
-    setPhotoFile(null);
     setPhotoPreview(null);
+    setPhotoUpload({ status: 'idle', progress: 0, url: null });
   };
 
   const handleSubmit = (e) => {
@@ -78,16 +104,8 @@ export default function AdminTestimonials() {
     setEditing(t._id);
     setForm({ clientName: t.clientName, company: t.company, position: t.position || '', review: t.review, rating: t.rating });
     setPhotoPreview(t.photo || null);
-    setPhotoFile(null);
+    setPhotoUpload({ status: 'idle', progress: 0, url: null });
     setShowForm(true);
-  };
-
-  const handlePhotoChange = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setPhotoFile(file);
-      setPhotoPreview(URL.createObjectURL(file));
-    }
   };
 
   return (
@@ -125,15 +143,14 @@ export default function AdminTestimonials() {
                 <div>
                   <label className="text-sm text-white/60 block mb-2">Client Photo</label>
                   <div className="flex items-center gap-3">
-                    <button type="button" onClick={() => fileRef.current?.click()} className="btn-secondary !py-2 !px-3 !text-xs">
-                      <FiUpload /> {photoPreview ? 'Change' : 'Upload'}
+                    <button type="button" onClick={startPhotoUpload} className="btn-secondary !py-2 !px-3 !text-xs">
+                      <FiUpload /> {photoPreview ? 'Change' : 'Upload photo'}
                     </button>
                     {photoPreview && (
                       <div className="relative w-10 h-10 rounded-full overflow-hidden border border-white/10">
                         <img src={photoPreview} alt="" className="w-full h-full object-cover" />
                       </div>
                     )}
-                    <input ref={fileRef} type="file" accept="image/*" onChange={handlePhotoChange} className="hidden" />
                   </div>
                 </div>
               </div>

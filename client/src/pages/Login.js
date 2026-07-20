@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { FiMail, FiLock, FiEye, FiEyeOff, FiArrowRight, FiUserPlus } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext';
 
@@ -13,16 +13,17 @@ export default function Login() {
   const { login, user, token } = useAuth();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (user && token && user.role !== 'admin') navigate('/');
-  }, [user, token, navigate, user?.role]);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
-      await login(email, password);
+      const data = await login(email, password);
+      if (data.user.role === 'admin') {
+        navigate('/admin/dashboard');
+      } else {
+        navigate('/');
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed');
     } finally {

@@ -1,6 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiPlus, FiEdit2, FiTrash2, FiEye, FiEyeOff, FiX, FiImage, FiCheck, FiChevronLeft, FiChevronRight, FiExternalLink, FiGithub, FiClock, FiFolder, FiVideo, FiSend, FiStar, FiUser, FiMaximize2, FiMinimize2 } from 'react-icons/fi';
+import { FiPlus, FiEdit2, FiTrash2, FiEye, FiEyeOff, FiX, FiImage, FiCheck, FiChevronLeft, FiChevronRight, FiExternalLink, FiGithub, FiClock, FiFolder, FiVideo, FiSend, FiStar, FiUser, FiMaximize2, FiMinimize2, FiUpload, FiInfo } from 'react-icons/fi';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination } from 'swiper/modules';
@@ -10,8 +10,12 @@ import 'swiper/css/pagination';
 import { useAuth } from '../../context/AuthContext';
 import AdminLayout from '../../components/AdminLayout';
 import { queryClient } from '../../components/QueryProvider';
+import { uploadFile } from '../../utils/cloudinaryUpload';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
+let uploadIdCounter = 0;
+const nextId = () => `upload_${Date.now()}_${uploadIdCounter++}`;
 
 function FileUploadButton({ inputRef, accept, multiple, onChange, disabled, label, icon: Icon }) {
   const [fileName, setFileName] = useState('');
@@ -51,6 +55,38 @@ function FileUploadButton({ inputRef, accept, multiple, onChange, disabled, labe
   );
 }
 
+function UploadProgress({ progress, status, size = 'full' }) {
+  const isActive = status === 'uploading' || status === 'pending';
+  const barClass = size === 'sm' ? 'h-1' : 'h-1.5';
+  if (status === 'idle') return null;
+  return (
+    <>
+      {isActive && (
+        <div className="absolute bottom-0 left-0 right-0 flex items-center px-2 pb-1.5 z-10 pointer-events-none">
+          <div className={`w-full rounded-full bg-black/30 ${barClass}`}>
+            <div className={`${barClass} rounded-full bg-gradient-to-r from-primary to-cyan-400 transition-all duration-300`} style={{ width: `${Math.max(progress || 0, 5)}%` }} />
+          </div>
+          <span className="ml-1.5 text-[10px] font-medium text-white/80 drop-shadow">{progress || 0}%</span>
+        </div>
+      )}
+      {status === 'done' && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/20 z-10 pointer-events-none rounded-xl">
+          <div className="w-7 h-7 rounded-full bg-green-500/40 backdrop-blur flex items-center justify-center">
+            <FiCheck size={16} className="text-green-300" />
+          </div>
+        </div>
+      )}
+      {status === 'error' && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/20 z-10 pointer-events-none rounded-xl">
+          <div className="w-7 h-7 rounded-full bg-red-500/40 backdrop-blur flex items-center justify-center">
+            <FiX size={16} className="text-red-300" />
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
 const getFileUrl = (url) => {
   if (!url) return '';
   if (url.startsWith('http')) return url;
@@ -83,13 +119,15 @@ function ProjectsSection({ API }) {
   const [editing, setEditing] = useState(null);
   const [feedback, setFeedback] = useState({ show: false, type: '', message: '' });
   const imageRef = useRef(null);
-  const videoRef = useRef(null);
-  const docRef = useRef(null);
+  const imageInputRef = useRef(null);
+  const videoInputRef = useRef(null);
+  const docInputRef = useRef(null);
   const [form, setForm] = useState({ name: '', title: '', description: '', category: 'web', tags: '', commentsEnabled: true });
-  const [imagePreviews, setImagePreviews] = useState([]);
   const [existingImages, setExistingImages] = useState([]);
   const [removedImageIds, setRemovedImageIds] = useState([]);
   const [selectedProject, setSelectedProject] = useState(null);
+  const [uploadTasks, setUploadTasks] = useState({ images: [], videos: [], documents: [] });
+  const pendingAttachRef = useRef({ projectId: null });
 
   const { data: projects = [], isLoading } = useQuery({
     queryKey: ['admin', 'projects'],
@@ -104,42 +142,122 @@ function ProjectsSection({ API }) {
     setTimeout(() => setFeedback({ show: false, type: '', message: '' }), 3000);
   };
 
+  const removeTask = (group, id) => {
+    setUploadTasks(prev => {
+      const removed = prev[group].find(t => t.id === id);
+      if (removed?.preview?.startsWith('blob:')) URL.revokeObjectURL(removed.preview);
+      return {
+        ...prev,
+        [group]: prev[group].filter(t => t.id !== id),
+      };
+    });
+  };
+
+  const attachFile = useCallback(async (projectId, group, result, file) => {
+    try {
+      const body = {};
+      const entry = group === 'documents'
+        ? { url: result.url, publicId: result.publicId, name: file.name }
+        : { url: result.url, publicId: result.publicId };
+      body[group] = [entry];
+      await API.put(`/projects/${projectId}`, body);
+      queryClient.invalidateQueries({ queryKey: ['admin', 'projects'] });
+    } catch {} // silent
+  }, [API]);
+
+  const handleFileUpload = useCallback(async (group, files) => {
+    if (!files?.length) return;
+    const limits = { images: 40, videos: 5, documents: 5 };
+    const maxLimit = limits[group] || 40;
+    const currentCount = (group === 'images' ? existingImages.length : 0) + uploadTasks[group].length;
+    const maxCanAdd = maxLimit - currentCount;
+    if (maxCanAdd <= 0) {
+      showFeedback('error', `Maximum ${maxLimit} ${group} allowed`);
+      return;
+    }
+    const toUpload = Array.from(files).slice(0, maxCanAdd);
+    for (const file of toUpload) {
+      const id = nextId();
+      const preview = group === 'images' ? URL.createObjectURL(file) : null;
+      setUploadTasks(prev => ({
+        ...prev,
+        [group]: [...prev[group], { id, progress: 0, status: 'uploading', preview, result: null, file }],
+      }));
+      try {
+        const result = await uploadFile(file, API, (pct) => {
+          setUploadTasks(prev => ({
+            ...prev,
+            [group]: prev[group].map(t => t.id === id ? { ...t, progress: pct } : t),
+          }));
+        });
+        const uploadResult = { url: result.url, publicId: result.publicId };
+        setUploadTasks(prev => ({
+          ...prev,
+          [group]: prev[group].map(t => t.id === id ? { ...t, progress: 100, status: 'done', preview: group === 'images' ? result.url : t.preview, result: uploadResult } : t),
+        }));
+        if (pendingAttachRef.current.projectId) {
+          attachFile(pendingAttachRef.current.projectId, group, uploadResult, file);
+        }
+      } catch (err) {
+        setUploadTasks(prev => ({
+          ...prev,
+          [group]: prev[group].map(t => t.id === id ? { ...t, status: 'error', progress: 0 } : t),
+        }));
+      }
+    }
+    if (toUpload.length < files.length) {
+      showFeedback('error', `Only ${toUpload.length} of ${files.length} files added (max ${maxLimit})`);
+    }
+  }, [existingImages.length, uploadTasks.images.length, uploadTasks.videos.length, uploadTasks.documents.length, showFeedback, attachFile, API]);
+
+
+  const removeNewImage = (id) => {
+    removeTask('images', id);
+  };
+
+  const removeExistingImage = (publicId) => {
+    setExistingImages(prev => prev.filter(img => img.publicId !== publicId));
+    setRemovedImageIds(prev => [...prev, publicId]);
+  };
+
   const saveMutation = useMutation({
     mutationFn: async () => {
-      const formData = new FormData();
-      formData.append('name', form.name);
-      formData.append('title', form.title);
-      formData.append('description', form.description);
-      formData.append('category', form.category);
-      formData.append('commentsEnabled', form.commentsEnabled);
-      formData.append('removedImages', JSON.stringify(removedImageIds));
-      form.tags.split(',').map(t => t.trim()).filter(Boolean).forEach(t => formData.append('tags', t));
-      imagePreviews.forEach(p => formData.append('images', p.file));
-      if (videoRef.current?.files?.length) {
-        Array.from(videoRef.current.files).forEach(f => formData.append('videos', f));
-      }
-      if (docRef.current?.files?.length) {
-        Array.from(docRef.current.files).forEach(f => formData.append('documents', f));
-      }
+      const body = {
+        name: form.name,
+        title: form.title,
+        description: form.description,
+        category: form.category,
+        commentsEnabled: form.commentsEnabled,
+        tags: form.tags.split(',').map(t => t.trim()).filter(Boolean),
+        removedImages: removedImageIds,
+      };
+
       if (editing) {
-        const res = await API.put(`/projects/${editing}`, formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        });
+        const res = await API.put(`/projects/${editing}`, body);
         return res.data;
       } else {
-        const res = await API.post('/projects', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        });
+        const res = await API.post('/projects', body);
         return res.data;
       }
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      const pid = data._id || editing;
+      pendingAttachRef.current.projectId = pid;
+      uploadTasks.images.filter(t => t.status === 'done').forEach(t => {
+        if (t.result) attachFile(pid, 'images', t.result, t.file);
+      });
+      uploadTasks.videos.filter(t => t.status === 'done').forEach(t => {
+        if (t.result) attachFile(pid, 'videos', t.result, t.file);
+      });
+      uploadTasks.documents.filter(t => t.status === 'done').forEach(t => {
+        if (t.result) attachFile(pid, 'documents', t.result, t.file);
+      });
       queryClient.invalidateQueries({ queryKey: ['admin', 'projects'] });
-      showFeedback('success', editing ? 'Project updated successfully!' : 'Project created successfully!');
+      showFeedback('success', editing ? 'Project updated!' : 'Project created!');
       resetForm();
     },
     onError: (err) => {
-      showFeedback('error', err.response?.data?.message || 'Failed to save project');
+      showFeedback('error', err.response?.data?.message || err.message || 'Failed to save project');
     },
   });
 
@@ -166,27 +284,6 @@ function ProjectsSection({ API }) {
     onError: () => showFeedback('error', 'Toggle failed'),
   });
 
-  const handleImageSelect = (e) => {
-    const files = Array.from(e.target.files);
-    const total = existingImages.length + imagePreviews.length + files.length;
-    if (total > 12) {
-      showFeedback('error', `Maximum 12 images allowed. You have ${existingImages.length + imagePreviews.length} already.`);
-      e.target.value = '';
-      return;
-    }
-    const previews = files.map(f => ({ file: f, url: URL.createObjectURL(f), id: `new_${Date.now()}_${Math.random()}` }));
-    setImagePreviews(prev => [...prev, ...previews]);
-  };
-
-  const removeNewPreview = (id) => {
-    setImagePreviews(prev => prev.filter(p => p.id !== id));
-  };
-
-  const removeExistingImage = (publicId) => {
-    setExistingImages(prev => prev.filter(img => img.publicId !== publicId));
-    setRemovedImageIds(prev => [...prev, publicId]);
-  };
-
   const handleSubmit = (e) => {
     e.preventDefault();
     saveMutation.mutate();
@@ -196,13 +293,15 @@ function ProjectsSection({ API }) {
     setShowForm(false);
     setEditing(null);
     setForm({ name: '', title: '', description: '', category: 'web', tags: '', commentsEnabled: true });
-    setImagePreviews([]);
     setExistingImages([]);
     setRemovedImageIds([]);
+    setUploadTasks(prev => {
+      Object.values(prev).flat().forEach(t => { if (t.preview?.startsWith('blob:')) URL.revokeObjectURL(t.preview); });
+      return { images: [], videos: [], documents: [] };
+    });
     if (imageRef.current) imageRef.current.value = '';
-    if (videoRef.current) videoRef.current.value = '';
-    if (docRef.current) docRef.current.value = '';
   };
+  // Don't clear pendingAttachRef here — uploads continue in background
 
   const handleDelete = (id) => {
     if (!window.confirm('Delete this project permanently?')) return;
@@ -229,12 +328,12 @@ function ProjectsSection({ API }) {
       commentsEnabled: project.commentsEnabled !== false
     });
     setExistingImages(project.images || []);
-    setImagePreviews([]);
+    setUploadTasks({ images: [], videos: [], documents: [] });
     setRemovedImageIds([]);
     setShowForm(true);
   };
 
-  const totalImages = existingImages.length + imagePreviews.length;
+  const totalImages = existingImages.length + uploadTasks.images.length;
 
   return (
     <>
@@ -282,7 +381,7 @@ function ProjectsSection({ API }) {
             </label>
 
             <div>
-              <label className="text-sm text-text-secondary block mb-2">Images ({totalImages}/12) — JPG, PNG, WEBP</label>
+              <label className="text-sm text-text-secondary block mb-2">Images ({totalImages}/40) — All formats supported</label>
               {totalImages > 0 && (
                 <div className="flex flex-wrap gap-3 mb-3">
                   {existingImages.map((img, i) => (
@@ -295,48 +394,87 @@ function ProjectsSection({ API }) {
                       </button>
                     </div>
                   ))}
-                  {imagePreviews.map((p) => (
-                    <div key={p.id} className="relative group/image w-24 h-24 rounded-xl overflow-hidden border border-white/10">
-                      <img src={p.url} alt="" className="w-full h-full object-cover" />
-                      <button type="button" onClick={() => removeNewPreview(p.id)}
-                        className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover/image:opacity-100 transition-opacity">
-                        <FiX size={20} className="text-red-400" />
-                      </button>
+                  {uploadTasks.images.map((t) => (
+                    <div key={t.id} className="relative group/image w-24 h-24 rounded-xl overflow-hidden border border-white/10">
+                      <img src={t.preview} alt="" className="w-full h-full object-cover" />
+                      <UploadProgress progress={t.progress} status={t.status} />
+                      {(t.status === 'done' || t.status === 'error') && (
+                        <button type="button" onClick={() => removeNewImage(t.id)}
+                          className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover/image:opacity-100 transition-opacity">
+                          <FiX size={20} className={t.status === 'error' ? 'text-red-400' : 'text-red-400'} />
+                        </button>
+                      )}
                     </div>
                   ))}
                 </div>
               )}
-              <FileUploadButton
-                inputRef={imageRef}
-                accept="image/*"
-                multiple
-                onChange={handleImageSelect}
-                disabled={totalImages >= 12}
-                label={totalImages >= 12 ? 'Max images reached' : 'Choose images'}
-                icon={FiImage}
-              />
+              <input ref={imageInputRef} type="file" accept="image/*" multiple
+                className="hidden" onChange={(e) => { handleFileUpload('images', e.target.files); e.target.value = ''; }} />
+              <button type="button" onClick={() => imageInputRef.current?.click()}
+                disabled={totalImages >= 40}
+                className={`flex flex-col items-center justify-center w-full min-h-[100px] rounded-xl border-2 border-dashed transition-all duration-300 ${
+                  totalImages >= 40
+                    ? 'border-gray-700 bg-gray-900/50 opacity-50 cursor-not-allowed'
+                    : 'border-primary/30 bg-primary/5 hover:border-primary/60 hover:bg-primary/10 cursor-pointer'
+                }`}>
+                <div className="flex flex-col items-center gap-2 py-4">
+                  <FiImage size={28} className={totalImages >= 40 ? 'text-gray-600' : 'text-primary'} />
+                  <span className={`text-sm font-medium ${totalImages >= 40 ? 'text-gray-600' : 'text-text-secondary'}`}>
+                    {totalImages >= 40 ? 'Max images reached (40)' : 'Upload images'}
+                  </span>
+                  <span className="text-xs text-text-muted">All image formats • Instant preview</span>
+                </div>
+              </button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm text-text-secondary block mb-2">Videos (MP4, MOV, AVI)</label>
-                <FileUploadButton
-                  inputRef={videoRef}
-                  accept="video/*"
-                  multiple
-                  label="Choose videos"
-                  icon={FiVideo}
-                />
+                {uploadTasks.videos.length > 0 && (
+                  <div className="flex flex-wrap gap-3 mb-3">
+                    {uploadTasks.videos.map((t) => (
+                      <div key={t.id} className="relative w-24 h-24 rounded-xl overflow-hidden border border-white/10 bg-black flex items-center justify-center">
+                        <FiVideo size={24} className="text-white/40" />
+                        <UploadProgress progress={t.progress} status={t.status} />
+                        <p className="absolute bottom-1 left-1 right-1 text-[8px] text-white/60 text-center truncate">{t.file.name}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <input ref={videoInputRef} type="file" accept="video/*" multiple
+                  className="hidden" onChange={(e) => { handleFileUpload('videos', e.target.files); e.target.value = ''; }} />
+                <button type="button" onClick={() => videoInputRef.current?.click()}
+                  className="flex flex-col items-center justify-center w-full min-h-[100px] rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 hover:border-primary/60 hover:bg-primary/10 cursor-pointer transition-all duration-300">
+                  <div className="flex flex-col items-center gap-2 py-4">
+                    <FiVideo size={28} className="text-primary" />
+                    <span className="text-sm font-medium text-text-secondary">Upload videos</span>
+                    <span className="text-xs text-text-muted">MP4, MOV, AVI</span>
+                  </div>
+                </button>
               </div>
               <div>
                 <label className="text-sm text-text-secondary block mb-2">Documents (PDF, DOC)</label>
-                <FileUploadButton
-                  inputRef={docRef}
-                  accept=".pdf,.doc,.docx"
-                  multiple
-                  label="Choose documents"
-                  icon={FiFolder}
-                />
+                {uploadTasks.documents.length > 0 && (
+                  <div className="flex flex-wrap gap-3 mb-3">
+                    {uploadTasks.documents.map((t) => (
+                      <div key={t.id} className="relative w-24 h-24 rounded-xl overflow-hidden border border-white/10 bg-background-card flex items-center justify-center">
+                        <FiFolder size={24} className="text-white/40" />
+                        <UploadProgress progress={t.progress} status={t.status} />
+                        <p className="absolute bottom-1 left-1 right-1 text-[8px] text-white/60 text-center truncate">{t.file.name}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <input ref={docInputRef} type="file" accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/plain" multiple
+                  className="hidden" onChange={(e) => { handleFileUpload('documents', e.target.files); e.target.value = ''; }} />
+                <button type="button" onClick={() => docInputRef.current?.click()}
+                  className="flex flex-col items-center justify-center w-full min-h-[100px] rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 hover:border-primary/60 hover:bg-primary/10 cursor-pointer transition-all duration-300">
+                  <div className="flex flex-col items-center gap-2 py-4">
+                    <FiFolder size={28} className="text-primary" />
+                    <span className="text-sm font-medium text-text-secondary">Upload documents</span>
+                    <span className="text-xs text-text-muted">PDF, DOC, DOCX</span>
+                  </div>
+                </button>
               </div>
             </div>
 
@@ -516,9 +654,11 @@ function VideosSection({ API }) {
   const [feedback, setFeedback] = useState({ show: false, type: '', message: '' });
   const [form, setForm] = useState({ title: '', description: '', category: 'web', tags: '', commentsEnabled: true });
   const [selectedVideo, setSelectedVideo] = useState(null);
-  const [videoFile, setVideoFile] = useState(null);
   const [videoPreview, setVideoPreview] = useState('');
   const [fullscreenVideo, setFullscreenVideo] = useState(null);
+  const [uploadTask, setUploadTask] = useState({ id: null, progress: 0, status: 'idle', result: null });
+  const pendingVideoRef = useRef({ videoId: null });
+  const fileInputRef = useRef(null);
 
   const { data: videos = [], isLoading } = useQuery({
     queryKey: ['admin', 'videos'],
@@ -546,34 +686,42 @@ function VideosSection({ API }) {
     setTimeout(() => setFeedback({ show: false, type: '', message: '' }), 3000);
   };
 
+  const attachVideoFile = useCallback(async (videoId, url, publicId) => {
+    try {
+      await API.put(`/videos/${videoId}`, { url, publicId });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'videos'] });
+    } catch {} // silent
+  }, [API]);
+
   const saveMutation = useMutation({
     mutationFn: async () => {
-      if (!editing && !videoFile) {
-        throw new Error('Please select a video file');
+      const body = {
+        title: form.title,
+        description: form.description,
+        category: form.category,
+        commentsEnabled: form.commentsEnabled,
+        tags: form.tags.split(',').map(t => t.trim()).filter(Boolean),
+      };
+      if (uploadTask.status === 'done' && uploadTask.result) {
+        body.url = uploadTask.result.url;
+        body.publicId = uploadTask.result.publicId;
       }
-      const formData = new FormData();
-      formData.append('title', form.title);
-      formData.append('description', form.description);
-      formData.append('category', form.category);
-      formData.append('commentsEnabled', form.commentsEnabled);
-      form.tags.split(',').map(t => t.trim()).filter(Boolean).forEach(t => formData.append('tags', t));
-      if (videoFile) formData.append('video', videoFile);
-
+      if (!body.url && videoPreview) {
+        body.url = videoPreview;
+      }
       if (editing) {
-        const res = await API.put(`/videos/${editing}`, formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        });
+        const res = await API.put(`/videos/${editing}`, body);
         return res.data;
       } else {
-        const res = await API.post('/videos', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        });
+        const res = await API.post('/videos', body);
         return res.data;
       }
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      const vid = data._id || editing;
+      pendingVideoRef.current.videoId = vid;
       queryClient.invalidateQueries({ queryKey: ['admin', 'videos'] });
-      showFeedback('success', editing ? 'Video updated successfully!' : 'Video uploaded successfully!');
+      showFeedback('success', editing ? 'Video updated!' : 'Video created!');
       resetForm();
     },
     onError: (err) => {
@@ -604,21 +752,57 @@ function VideosSection({ API }) {
     onError: () => showFeedback('error', 'Toggle failed'),
   });
 
+  const handleWidgetUpload = useCallback(async () => {
+    try {
+      const result = await openWidget({ maxFileSize: 300 * 1024 * 1024 });
+      const uploadResult = { url: result.url, publicId: result.publicId };
+      setUploadTask({ id: nextId(), progress: 100, status: 'done', result: uploadResult });
+      setVideoPreview(result.url);
+      if (pendingVideoRef.current.videoId) {
+        attachVideoFile(pendingVideoRef.current.videoId, uploadResult.url, uploadResult.publicId);
+      }
+    } catch (err) {
+      if (err.message !== 'Upload cancelled') {
+        showFeedback('error', 'Video upload failed. Max size is 300MB.');
+      }
+    }
+  }, [showFeedback, attachVideoFile]);
+
+  const handleDirectUpload = useCallback(async (file) => {
+    try {
+      if (file.size > 300 * 1024 * 1024) {
+        showFeedback('error', 'File exceeds 300MB limit');
+        return;
+      }
+      const taskId = nextId();
+      setUploadTask({ id: taskId, progress: 0, status: 'uploading', result: null });
+      const result = await uploadFile(file, API, (pct) => {
+        setUploadTask(prev => prev.id === taskId ? { ...prev, progress: pct } : prev);
+      });
+      const uploadResult = { url: result.url, publicId: result.publicId };
+      setUploadTask({ id: taskId, progress: 100, status: 'done', result: uploadResult });
+      setVideoPreview(result.url);
+      if (pendingVideoRef.current.videoId) {
+        attachVideoFile(pendingVideoRef.current.videoId, uploadResult.url, uploadResult.publicId);
+      }
+    } catch (err) {
+      setUploadTask(prev => prev.status === 'uploading' ? { id: null, progress: 0, status: 'idle', result: null } : prev);
+      showFeedback('error', err.message || 'Upload failed');
+    }
+  }, [API, showFeedback, attachVideoFile]);
+
   const handleFileSelect = (e) => {
     const file = e.target.files?.[0];
-    if (!file) return;
-    const maxSize = 1024 * 1024 * 1024;
-    if (file.size > maxSize) {
-      showFeedback('error', 'Video too large. Maximum size is 1GB.');
-      e.target.value = '';
-      return;
-    }
-    setVideoFile(file);
-    setVideoPreview(URL.createObjectURL(file));
+    if (file) handleDirectUpload(file);
+    if (e.target) e.target.value = '';
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!editing && !videoPreview) {
+      showFeedback('error', 'Please upload a video first');
+      return;
+    }
     saveMutation.mutate();
   };
 
@@ -626,11 +810,14 @@ function VideosSection({ API }) {
     setShowForm(false);
     setEditing(null);
     setForm({ title: '', description: '', category: 'web', tags: '', commentsEnabled: true });
-    setVideoFile(null);
     setVideoPreview('');
   };
 
-  const openNewForm = () => { resetForm(); setShowForm(true); };
+  const clearUploadStatus = () => {
+    setUploadTask({ id: null, progress: 0, status: 'idle', result: null });
+  };
+
+  const openNewForm = () => { clearUploadStatus(); resetForm(); setShowForm(true); };
 
   const openEditForm = (video) => {
     setEditing(video._id);
@@ -641,8 +828,8 @@ function VideosSection({ API }) {
       tags: video.tags?.join(', ') || '',
       commentsEnabled: video.commentsEnabled !== false
     });
-    setVideoFile(null);
-    setVideoPreview(getFileUrl(video.url));
+    setVideoPreview(video.url ? getFileUrl(video.url) : '');
+    setUploadTask({ id: null, progress: 0, status: 'idle', result: null });
     setShowForm(true);
   };
 
@@ -668,6 +855,25 @@ function VideosSection({ API }) {
         }`}>
           <FiCheck size={16} />
           {feedback.message}
+        </div>
+      )}
+
+      {uploadTask.status === 'uploading' && (
+        <div className="mb-4 p-3 rounded-xl glass border border-primary/20 flex items-center gap-3">
+          <div className="flex-1">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs font-medium text-text-secondary">Uploading video to Cloudinary...</span>
+              <span className="text-xs font-medium text-primary">{uploadTask.progress}%</span>
+            </div>
+            <div className="w-full h-2 rounded-full bg-white/10">
+              <div className="h-2 rounded-full bg-gradient-to-r from-primary to-cyan-400 transition-all duration-300" style={{ width: `${Math.max(uploadTask.progress, 5)}%` }} />
+            </div>
+          </div>
+        </div>
+      )}
+      {uploadTask.status === 'done' && (
+        <div className="mb-4 p-3 rounded-xl bg-green-500/10 border border-green-500/20 text-green-400 text-sm font-medium flex items-center gap-2">
+          <FiCheck size={16} /> Video uploaded successfully!
         </div>
       )}
 
@@ -698,19 +904,25 @@ function VideosSection({ API }) {
             </label>
             <div>
               <label className="text-sm text-text-secondary block mb-2">
-                Video File {editing ? '(leave empty to keep existing)' : '* (MP4, MOV, WebM — up to 1GB)'}
+                Video {editing ? '(leave empty to keep existing)' : '* (select from Google Drive)'}
               </label>
               {videoPreview && (
-                <div className="mb-3 rounded-xl overflow-hidden bg-black max-h-48">
-                  <video src={videoPreview} controls className="w-full h-full max-h-48" />
+                <div className="relative mb-3 rounded-xl overflow-hidden bg-black max-h-48">
+                  <video key={videoPreview} src={videoPreview} controls className="w-full h-full max-h-48" style={{ position: 'relative', zIndex: 0 }} />
+                  {uploadTask.status === 'done' && (
+                    <div className="absolute top-2 right-2 px-2 py-1 rounded-lg bg-green-500/30 text-green-300 text-xs font-medium border border-green-400/30 z-10">
+                      <FiCheck size={12} className="inline mr-1" />Ready
+                    </div>
+                  )}
                 </div>
               )}
-              <FileUploadButton
-                accept="video/*"
-                label={editing ? 'Choose new video file' : 'Choose video file'}
-                icon={FiVideo}
-                onChange={handleFileSelect}
-              />
+              <input ref={fileInputRef} type="file" accept="video/*" className="hidden" onChange={handleFileSelect} />
+              <button type="button" onClick={handleWidgetUpload} className="btn-cyan !py-2 !px-4 !text-sm btn-primary w-full">
+                <FiVideo size={16} /> {editing ? 'Choose new video' : 'Choose video (max 300MB)'}
+              </button>
+              <button type="button" onClick={() => fileInputRef.current?.click()} className="!py-2 !px-4 !text-sm btn-primary w-full mt-2" disabled={uploadTask.status === 'uploading'}>
+                <FiUpload size={16} /> {uploadTask.status === 'uploading' ? `Uploading ${uploadTask.progress}%` : 'Or upload via server (supports large files)'}
+              </button>
             </div>
             <div className="flex gap-3 pt-2">
               <button type="submit" disabled={saveMutation.isPending} className="btn-primary">
@@ -734,11 +946,17 @@ function VideosSection({ API }) {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {videos.map((video, i) => (
             <motion.div key={video._id} initial={{ opacity: 0, scale: 0.85, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ delay: i * 0.05, type: 'spring', stiffness: 200, damping: 20 }}
-              className="card card-gradient card-glow group overflow-hidden cursor-pointer" onClick={() => setSelectedVideo(video)}>
+              className="card card-gradient card-glow group overflow-hidden cursor-pointer" onClick={() => { if (video.url) setFullscreenVideo(video.url); }}>
               <div className="relative h-44 rounded-xl overflow-hidden mb-4 bg-black flex items-center justify-center">
-                <video src={getFileUrl(video.url)} className="w-full h-full object-cover" muted
-                  onMouseEnter={(e) => e.target.play().catch(() => {})}
-                  onMouseLeave={(e) => { e.target.pause(); e.target.currentTime = 0; }} />
+                {video.url ? (
+                  <video src={getFileUrl(video.url)} className="w-full h-full object-cover" muted preload="metadata"
+                    onMouseEnter={(e) => e.target.play().catch(() => {})}
+                    onMouseLeave={(e) => { e.target.pause(); e.target.currentTime = 0; }} />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-pink-500/10 to-purple-500/10">
+                    <FiVideo className="text-white/30" size={36} />
+                  </div>
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-center justify-center">
                   <div className="w-14 h-14 rounded-full bg-gradient-to-br from-pink-500/40 to-purple-500/40 backdrop-blur flex items-center justify-center border border-white/20 shadow-lg shadow-pink-500/20">
                     <FiVideo size={24} className="text-white ml-1" />
@@ -769,6 +987,7 @@ function VideosSection({ API }) {
                   {video.isPublished ? <><FiEyeOff size={14} /> Unpublish</> : <><FiEye size={14} /> Publish</>}
                 </button>
                 <button onClick={(e) => { e.stopPropagation(); openEditForm(video); }} className="p-2 rounded-lg glass hover:bg-blue-500/10 text-text-secondary hover:text-blue-400 transition-all"><FiEdit2 size={14} /></button>
+                <button onClick={(e) => { e.stopPropagation(); setSelectedVideo(video); }} className="p-2 rounded-lg glass hover:bg-purple-500/10 text-text-secondary hover:text-purple-400 transition-all"><FiInfo size={14} /></button>
                 <button onClick={(e) => { e.stopPropagation(); handleDelete(video._id); }} className="p-2 rounded-lg glass hover:bg-red-500/10 text-text-secondary hover:text-red-400 transition-all"><FiTrash2 size={14} /></button>
               </div>
             </motion.div>
@@ -804,13 +1023,22 @@ function VideosSection({ API }) {
                 </button>
               </div>
 
-              <div className="relative rounded-xl overflow-hidden bg-black mb-4">
-                <video src={getFileUrl(selectedVideo.url)} controls className="w-full max-h-[50vh]" />
-                <button onClick={(e) => { e.stopPropagation(); setFullscreenVideo(selectedVideo.url); }}
-                  className="absolute top-3 right-3 w-10 h-10 rounded-xl glass flex items-center justify-center text-white/70 hover:text-white transition-all">
-                  <FiMaximize2 size={18} />
-                </button>
-              </div>
+              {selectedVideo.url ? (
+                <div className="relative rounded-xl overflow-hidden bg-black">
+                  <video src={getFileUrl(selectedVideo.url)} controls className="w-full max-h-[50vh]" />
+                  <button onClick={(e) => { e.stopPropagation(); setFullscreenVideo(selectedVideo.url); }}
+                    className="absolute top-3 right-3 w-10 h-10 rounded-xl glass flex items-center justify-center text-white/70 hover:text-white transition-all">
+                    <FiMaximize2 size={18} />
+                  </button>
+                </div>
+              ) : (
+                <div className="mb-4 rounded-xl overflow-hidden bg-black/60 flex items-center justify-center h-48">
+                  <div className="text-center">
+                    <FiVideo size={36} className="text-white/30 mx-auto mb-2" />
+                    <p className="text-xs text-white/40">Video processing...</p>
+                  </div>
+                </div>
+              )}
 
               <p className="text-text-secondary text-sm mb-4">{selectedVideo.description || 'No description'}</p>
 

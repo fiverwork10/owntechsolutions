@@ -60,6 +60,11 @@ exports.createVideo = async (req, res) => {
     if (req.file) {
       videoData.url = req.file.path;
       videoData.publicId = req.file.filename;
+    } else if (req.body.url) {
+      videoData.url = req.body.url;
+      videoData.publicId = req.body.publicId;
+    } else if (req.body.driveFileId) {
+      videoData.driveFileId = req.body.driveFileId;
     }
     const video = new Video(videoData);
     await video.save();
@@ -84,12 +89,20 @@ exports.updateVideo = async (req, res) => {
     if (typeof updateData.tags === 'string') {
       updateData.tags = updateData.tags.split(',').map(t => t.trim()).filter(Boolean);
     }
-    Object.assign(video, updateData);
     if (req.file) {
       if (video.publicId) deleteFromCloudinary(video.publicId);
       video.url = req.file.path;
       video.publicId = req.file.filename;
+    } else if (req.body.url) {
+      if (video.publicId && video.publicId !== req.body.publicId) {
+        deleteFromCloudinary(video.publicId);
+      }
+      video.url = req.body.url;
+      video.publicId = req.body.publicId;
+    } else if (req.body.driveFileId) {
+      video.driveFileId = req.body.driveFileId;
     }
+    Object.assign(video, updateData);
     if (video.isPublished && !video.publishedAt) {
       video.publishedAt = new Date();
     }
